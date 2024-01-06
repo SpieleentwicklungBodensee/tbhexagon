@@ -31,8 +31,10 @@ class Game():
 
         for i in range(4):
             scale_f = ((4.0 / SCR_W) * ((self.tick + 32 * i) % 128)) ** 2
+            #scale_f = 1
             scaled = pygame.transform.scale(self.logo, (SCR_W * scale_f, SCR_H * scale_f))
-            scaled.set_alpha(i/4.0 * 255)
+            scaled.set_alpha(scale_f / 2 * 255)
+            scaled = pygame.transform.rotate(scaled, self.tick)
             self.window.blit(scaled, ((SCR_W - scaled.get_width()) / 2, (SCR_H - scaled.get_height()) / 2))
 
         if int(time.time() * 1000) % 500 < 250:
