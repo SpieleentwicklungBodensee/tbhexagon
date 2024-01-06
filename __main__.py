@@ -28,6 +28,22 @@ class Game():
         elif RENDER_MODE == 'led':
             self.window = pygame.display.set_mode((WIN_W, WIN_H))
             self.output = pygame.Surface((SCR_W, SCR_H))
+            self.overlay = pygame.Surface((WIN_W, WIN_H), flags=pygame.SRCALPHA)
+
+            stepx = int(WIN_W / SCR_H)
+            stepy = int(WIN_W / SCR_H)
+            gridcolor = (0, 0, 0, 64)
+            for y in range(0, WIN_H, stepy):
+                for x in range(0, WIN_W, stepx):
+                    pygame.draw.line(self.overlay, gridcolor, (x, 0), (x, WIN_H))
+                    pygame.draw.line(self.overlay, gridcolor, (x+1, 0), (x+1, WIN_H))
+                    pygame.draw.line(self.overlay, gridcolor, (0, y), (WIN_W, y))
+                    pygame.draw.line(self.overlay, gridcolor, (0, y+1), (WIN_W, y+1))
+
+            for y in range(0, WIN_H, stepy):
+                if y % stepy == 0:
+                    for i in range(int(stepy/2)):
+                        pygame.draw.line(self.overlay, (0, 0, 0, 255), (0, y+i), (WIN_W, y+i))
 
         self.running = False
 
@@ -96,6 +112,7 @@ class Game():
             pass
         elif RENDER_MODE == 'led':
             pygame.transform.scale(self.output, (WIN_W, WIN_H), self.window)
+            self.window.blit(self.overlay, (0, 0))
 
         pygame.display.flip()
 
@@ -107,6 +124,9 @@ class Game():
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_ESCAPE:
                     self.running = False
+
+                if e.key == pygame.K_F11:
+                    pygame.display.toggle_fullscreen()
 
 
     def update(self):
