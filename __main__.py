@@ -4,7 +4,7 @@ import random
 
 from bitmapfont import BitmapFont
 
-WIN_W, WIN_H = 1729, 1792
+WIN_W, WIN_H = 1024, 1024
 SCR_W, SCR_H = 256, 256
 
 COLORS = {'red': (255, 0, 0),
@@ -13,9 +13,9 @@ COLORS = {'red': (255, 0, 0),
           }
 
 DISTANCE = 64
-SPEED = 1.0 / 64
+SPEED = 1.0 / 128
 
-RENDER_MODE = 'led'     # 'plain', 'led'
+RENDER_MODE = 'plain'     # 'plain', 'led'
 
 pygame.display.init()
 
@@ -45,7 +45,7 @@ class Game():
                     for i in range(int(stepy/2)):
                         pygame.draw.line(self.overlay, (0, 0, 0, 255), (0, y+i), (WIN_W, y+i))
 
-            self.overlay = pygame.image.load('gfx/raster1792.png')
+            #self.overlay = pygame.image.load('gfx/raster1792.png')
 
         self.running = False
 
@@ -84,8 +84,12 @@ class Game():
             #if dist < 0.3 and dist > 0.2:
             #    logo_sprite = self.logo_filled
 
-            if size > 205 and size < 255:
+            if size > 250 and size < 300:
                 logo_sprite = self.logo_filled
+
+            if size > 300:
+                alpha = 255 - (size / (SCR_W * 4)) * 255
+                #alpha = 128
 
             scaled = pygame.transform.scale(logo_sprite, (size, size))
             scaled.set_alpha(alpha)
@@ -101,8 +105,8 @@ class Game():
         else:
             title_color = COLORS['white']
 
-        self.font_huge.centerText(self.output, 'TOOLBOX', y=2, fgcolor=title_color)
-        self.font_huge.centerText(self.output, 'HEXAGON', y=3, fgcolor=title_color)
+        #self.font_huge.centerText(self.output, 'TOOLBOX', y=2, fgcolor=title_color)
+        #self.font_huge.centerText(self.output, 'HEXAGON', y=3, fgcolor=title_color)
 
         self.font.drawText(self.output, 'HI', x=1, y=SCR_H/8-2, fgcolor=COLORS['white'])
         self.font.drawText(self.output, '00000', x=1, y=SCR_H/8-1, fgcolor=COLORS['white'])
