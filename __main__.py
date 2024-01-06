@@ -4,7 +4,7 @@ import random
 
 from bitmapfont import BitmapFont
 
-WIN_W, WIN_H = 1024, 1024
+WIN_W, WIN_H = 1729, 1792
 SCR_W, SCR_H = 256, 256
 
 COLORS = {'red': (255, 0, 0),
@@ -44,6 +44,8 @@ class Game():
                 if y % stepy == 0:
                     for i in range(int(stepy/2)):
                         pygame.draw.line(self.overlay, (0, 0, 0, 255), (0, y+i), (WIN_W, y+i))
+
+            self.overlay = pygame.image.load('gfx/raster1792.png')
 
         self.running = False
 
