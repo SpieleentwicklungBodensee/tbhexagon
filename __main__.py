@@ -1,22 +1,37 @@
 import pygame
+import time
+
 from bitmapfont import BitmapFont
+
 
 SCR_W, SCR_H = 256, 256
 
+COLORS = {'red': (255, 0, 0),
+          'white': (255, 255, 255),
+          }
+
 pygame.display.init()
+
 
 class Game():
     def __init__(self):
         self.window = pygame.display.set_mode((SCR_W, SCR_H), flags=pygame.SCALED)
         self.running = False
 
-        self.font = BitmapFont('gfx/heimatfont.png', scr_w=SCR_W, scr_h=SCR_H)
+        self.font = BitmapFont('gfx/heimatfont.png', scr_w=SCR_W, scr_h=SCR_H, colors=COLORS.values())
+        self.font_big = BitmapFont('gfx/heimatfont.png', zoom=2, scr_w=SCR_W, scr_h=SCR_H, colors=COLORS.values())
 
 
     def render(self):
         self.window.fill((0, 0, 0))
 
-        self.font.centerText(self.window, 'TB HEXAGON', y=2)
+        if int(time.time() * 1000) % 500 < 250:
+            title_color = COLORS['red']
+        else:
+            title_color = COLORS['white']
+
+        self.font_big.centerText(self.window, 'TOOLBOX', y=2, fgcolor=title_color)
+        self.font_big.centerText(self.window, 'HEXAGON', y=3, fgcolor=title_color)
 
         pygame.display.flip()
 
