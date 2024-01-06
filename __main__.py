@@ -15,15 +15,25 @@ pygame.display.init()
 
 class Game():
     def __init__(self):
-        self.window = pygame.display.set_mode((SCR_W, SCR_H), flags=pygame.SCALED)
+        self.window = pygame.display.set_mode((SCR_W, SCR_H), flags=pygame.SCALED|pygame.FULLSCREEN)
         self.running = False
 
         self.font = BitmapFont('gfx/heimatfont.png', scr_w=SCR_W, scr_h=SCR_H, colors=COLORS.values())
         self.font_big = BitmapFont('gfx/heimatfont.png', zoom=2, scr_w=SCR_W, scr_h=SCR_H, colors=COLORS.values())
 
+        self.logo = pygame.image.load('gfx/tb-logo-1.png')
+
+        self.tick = 0
+
 
     def render(self):
         self.window.fill((0, 0, 0))
+
+        for i in range(4):
+            scale_f = ((4.0 / SCR_W) * ((self.tick + 32 * i) % 128)) ** 2
+            scaled = pygame.transform.scale(self.logo, (SCR_W * scale_f, SCR_H * scale_f))
+            scaled.set_alpha(i/4.0 * 255)
+            self.window.blit(scaled, ((SCR_W - scaled.get_width()) / 2, (SCR_H - scaled.get_height()) / 2))
 
         if int(time.time() * 1000) % 500 < 250:
             title_color = COLORS['red']
@@ -52,10 +62,16 @@ class Game():
     def start(self):
         self.running = True
 
+        clock = pygame.time.Clock()
+
         while self.running:
             self.render()
             self.controls()
             self.update()
+
+            self.tick += 1
+
+            clock.tick(60)
 
 
     def quit(self):
