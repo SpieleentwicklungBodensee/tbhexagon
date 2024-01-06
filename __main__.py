@@ -1,5 +1,6 @@
 import pygame
 import time
+import random
 
 from bitmapfont import BitmapFont
 
@@ -27,6 +28,7 @@ class Game():
         self.font_huge = BitmapFont('gfx/heimatfont.png', zoom=3, scr_w=SCR_W, scr_h=SCR_H, colors=COLORS.values())
 
         self.logo = pygame.image.load('gfx/tb-logo-pure-1.png')
+        self.logo_filled = pygame.image.load('gfx/tb-logo-pure-2.png')
 
         self.tick = 0
 
@@ -48,18 +50,26 @@ class Game():
 
         for dist, rot in self.logos:
             size = 1.0 / dist * DISTANCE
-            alpha = size / 128 * 255
+            alpha = size / 128 * 255 + 64
             rot = rot
 
             if size <= 1:
                 size = 1
             if size >= SCR_W * 4:
-                #self.window.fill((255,0,0))
+                self.window.fill((0,0,0))
                 continue
 
             size = int(size)
 
-            scaled = pygame.transform.scale(self.logo, (size, size))
+            logo_sprite = self.logo
+
+            #if dist < 0.3 and dist > 0.2:
+            #    logo_sprite = self.logo_filled
+
+            if size > 205 and size < 255:
+                logo_sprite = self.logo_filled
+
+            scaled = pygame.transform.scale(logo_sprite, (size, size))
             scaled.set_alpha(alpha)
             scaled = pygame.transform.rotate(scaled, rot)
 
@@ -75,6 +85,11 @@ class Game():
 
         self.font_huge.centerText(self.window, 'TOOLBOX', y=2, fgcolor=title_color)
         self.font_huge.centerText(self.window, 'HEXAGON', y=3, fgcolor=title_color)
+
+        self.font.drawText(self.window, 'HI', x=1, y=SCR_H/8-2, fgcolor=COLORS['white'])
+        self.font.drawText(self.window, '00000', x=1, y=SCR_H/8-1, fgcolor=COLORS['white'])
+        self.font.drawText(self.window, '1UP', x=SCR_W/8-4, y=SCR_H/8-2, fgcolor=COLORS['white'])
+        self.font.drawText(self.window, '00000', x=SCR_W/8-6, y=SCR_H/8-1, fgcolor=COLORS['white'])
 
         pygame.display.flip()
 
@@ -96,6 +111,7 @@ class Game():
             if dist <= 0:
                 dist = 3
                 rot += 60
+                rot = int(random.random() * 36) * 10
 
             newlogos.append((dist, rot))
 
