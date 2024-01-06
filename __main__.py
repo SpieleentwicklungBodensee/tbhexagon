@@ -20,6 +20,7 @@ class Game():
 
         self.font = BitmapFont('gfx/heimatfont.png', scr_w=SCR_W, scr_h=SCR_H, colors=COLORS.values())
         self.font_big = BitmapFont('gfx/heimatfont.png', zoom=2, scr_w=SCR_W, scr_h=SCR_H, colors=COLORS.values())
+        self.font_huge = BitmapFont('gfx/heimatfont.png', zoom=3, scr_w=SCR_W, scr_h=SCR_H, colors=COLORS.values())
 
         self.logo = pygame.image.load('gfx/tb-logo-1.png')
 
@@ -42,8 +43,8 @@ class Game():
         else:
             title_color = COLORS['white']
 
-        self.font_big.centerText(self.window, 'TOOLBOX', y=2, fgcolor=title_color)
-        self.font_big.centerText(self.window, 'HEXAGON', y=3, fgcolor=title_color)
+        self.font_huge.centerText(self.window, 'TOOLBOX', y=2, fgcolor=title_color)
+        self.font_huge.centerText(self.window, 'HEXAGON', y=3, fgcolor=title_color)
 
         pygame.display.flip()
 
