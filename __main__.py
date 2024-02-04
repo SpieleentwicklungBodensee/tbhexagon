@@ -1,8 +1,47 @@
 import pygame
 import time
 import random
+import math
 
 from bitmapfont import BitmapFont
+
+def draw_lines(surface,rot,size,verts):
+    verts_final=[]
+    for v in verts:
+
+        # tb logo specific adjustments
+        v=[v[0]*1.333333+30,v[1]*-1.333333+100]
+        v=[v[0]-130/2,v[1]-130/2]
+
+        # rotate
+        v1=rotate((0,0),v,-rot*math.pi/180)
+
+        # scale
+        v1=scale(v1,size*0.0087)
+
+        #center on screen
+        v1=(v1[0]+SCR_W/2,v1[1]+SCR_H/2)
+
+        verts_final.append(v1)
+    color=(max(min(int(0.1*size*size),255),0),0,0)
+    pygame.draw.lines(surface,color,True,verts_final,width=max(int(size/80),1))
+
+def scale(vert,scale):
+    return (vert[0]*scale,vert[1]*scale)
+
+#stolen from https://stackoverflow.com/questions/34372480/rotate-point-about-another-point-in-degrees-python
+def rotate(origin, point, angle):
+    """
+    Rotate a point counterclockwise by a given angle around a given origin.
+
+    The angle should be given in radians.
+    """
+    ox, oy = origin
+    px, py = point
+
+    qx = ox + math.cos(angle) * (px - ox) - math.sin(angle) * (py - oy)
+    qy = oy + math.sin(angle) * (px - ox) + math.cos(angle) * (py - oy)
+    return qx, qy
 
 WIN_W, WIN_H = 1024, 1024
 SCR_W, SCR_H = 256, 256
@@ -66,7 +105,7 @@ class Game():
     def render(self):
         self.output.fill((0, 0, 0))
 
-        for dist, rot in self.logos:
+        for dist, rot in sorted(self.logos,key=lambda x: -x[0]):
             size = 1.0 / dist * DISTANCE
             alpha = size / 128 * 255 + 64
             rot = rot
@@ -98,7 +137,13 @@ class Game():
             x = (SCR_W - scaled.get_width()) / 2
             y = (SCR_H - scaled.get_height()) / 2
 
-            self.output.blit(scaled, (x, y))
+            if logo_sprite == self.logo_filled: self.output.blit(scaled, (x, y))
+
+            draw_lines(self.output,rot,size,[[26.261813, -13.008806], [26.249923, -13.001606], [26.237643, -13.008806], [26.225762999999997, -12.987656], [-7.500179600000006, 6.467753700000001], [-7.5574196000000065, 6.467753700000001], [-7.5465796000000065, 46.014574], [26.26750099999999, 65.508813], [60.05742099999999, 46.016152000000005], [60.05742099999999, 30.444071], [59.99233099999999, 30.444071], [60.05742099999999, 30.331587000000003], [53.08590099999999, 26.310009], [60.05742099999999, 22.288034], [60.05532099999999, 22.284334], [60.05742099999999, 22.283234], [60.05742099999999, 6.5575257], [60.02442099999999, 6.5575257], [60.05742099999999, 6.5007557], [26.27370599999999, -12.987662], [26.26182599999999, -13.008812]]);
+            draw_lines(self.output,rot,size,[[29.62222799999999, 28.488001000000004], [29.62222799999999, 28.488001000000004], [29.67740799999999, -2.853285299999996], [53.05539799999999, 10.545036000000003], [53.05539799999999, 18.243743000000002], [46.07939099999999, 22.267830000000004], [38.97228299999999, 18.167961000000005], [38.97228299999999, 26.251254000000003], [53.05539799999999, 34.375341000000006], [53.05539799999999, 41.971861000000004], [26.256672, 57.431595], [-0.55549667, 41.96421], [-0.55549667, 10.545041], [22.62034, -2.8120226], [22.62034, 24.438571], [17.035071, 21.20808], [10.032657999999998, 25.247745], [30.968867999999997, 37.359877999999995], [37.974318, 33.318099999999994], [29.622223999999996, 28.488006999999996]]);
+
+            #for x in range(0,SCR_W,2):
+            #    pygame.draw.line(self.output,(0,0,0),(x,0),(x,SCR_H))
 
         if int(time.time() * 1000) % 500 < 250:
             title_color = COLORS['red']
