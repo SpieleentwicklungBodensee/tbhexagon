@@ -300,10 +300,33 @@ class Game():
                     if modstate & pygame.KMOD_ALT:
                         pygame.display.toggle_fullscreen()
 
+                if e.key == pygame.K_LEFT:
+                    self.player.xdir = -1
+                elif e.key == pygame.K_RIGHT:
+                    self.player.xdir = 1
+                elif e.key == pygame.K_UP:
+                    self.player.ydir = -1
+                elif e.key == pygame.K_DOWN:
+                    self.player.ydir = 1
+
                 if self.mode == 'boot':
                     self.setMode('title')
                 elif self.mode == 'title':
                     self.setMode('game')
+
+            elif e.type == pygame.KEYUP:
+                if e.key == pygame.K_LEFT:
+                    if self.player.xdir < 0:
+                        self.player.xdir = 0
+                elif e.key == pygame.K_RIGHT:
+                    if self.player.xdir > 0:
+                        self.player.xdir = 0
+                elif e.key == pygame.K_UP:
+                    if self.player.ydir < 0:
+                        self.player.ydir = 0
+                elif e.key == pygame.K_DOWN:
+                    if self.player.ydir > 0:
+                        self.player.ydir = 0
 
             elif e.type == pygame.JOYAXISMOTION:
                 if e.axis == 0:
