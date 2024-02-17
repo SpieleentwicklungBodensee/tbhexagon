@@ -268,9 +268,16 @@ class Game():
 
     def drawPrintlog(self):
         self.font.locate(0, 0)
-        for msg in PRINTLOG:
+
+        outlines = []
+        maxlines = SCR_H // 8
+
+        for msg in PRINTLOG[-maxlines:]:
             for s in str(msg).split('\n'):
-                self.font.drawText(self.output, s.upper(), x=1, fgcolor=COLORS['white'])
+                outlines.append(s)
+
+        for line in outlines[-maxlines:]:
+            self.font.drawText(self.output, line.upper(), x=1, fgcolor=COLORS['white'])
 
 
     def controls(self):
