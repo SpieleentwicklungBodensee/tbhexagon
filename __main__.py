@@ -20,6 +20,9 @@ if not 'RENDER_MODE' in dir():
     # 'sim' = led simulation for uli
     RENDER_MODE = 'led'
 
+if not 'JOY_DEADZONE' in dir():
+    JOY_DEADZONE = 0.2
+
 
 # custom print functions
 
@@ -348,9 +351,9 @@ class Game():
 
             elif e.type == pygame.JOYAXISMOTION:
                 if e.axis == 0:
-                    self.player.xdir = e.value if abs(e.value) > 0.05 else 0
+                    self.player.xdir = e.value if abs(e.value) > JOY_DEADZONE else 0
                 elif e.axis == 1:
-                    self.player.ydir = e.value if abs(e.value) > 0.05 else 0
+                    self.player.ydir = e.value if abs(e.value) > JOY_DEADZONE else 0
 
             elif e.type == pygame.JOYBUTTONDOWN:
                 if self.mode == 'boot':
