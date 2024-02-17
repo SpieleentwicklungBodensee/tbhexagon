@@ -27,6 +27,18 @@ if not 'DEFAULT_MODE' in dir():
     # 'boot', 'title', 'game'
     DEFAULT_MODE = 'boot'
 
+brightnessValue = 0
+def gamma(v):
+    return min(v * 2**(brightnessValue / 4), 255)
+
+def brightness(color):
+    color = list(color)
+    if isinstance(color[0], list | tuple):
+        result = []
+        for co in color:
+            result.append(tuple([gamma(c) for c in co]))
+        return result
+    return tuple([gamma(c) for c in color])
 
 # custom print functions
 
@@ -102,7 +114,7 @@ def draw_lines(surface,color,x,y,rot,size,verts):
         v1=(v1[0]+x+SCR_W/2,v1[1]+y+SCR_H/2)
 
         verts_final.append(v1)
-    pygame.draw.lines(surface,color,True,verts_final,width=max(int(size/80),1))
+    pygame.draw.lines(surface,brightness(color),True,verts_final,width=max(int(size/80),1))
 
 def scale(vert,scale):
     return (vert[0]*scale,vert[1]*scale)
@@ -212,9 +224,9 @@ class Game():
 
         print('loading graphics...')
 
-        self.font = BitmapFont('gfx/heimatfont.png', scr_w=SCR_W, scr_h=SCR_H, colors=COLORS.values())
-        self.font_big = BitmapFont('gfx/heimatfont.png', zoom=2, scr_w=SCR_W, scr_h=SCR_H, colors=COLORS.values())
-        self.font_huge = BitmapFont('gfx/heimatfont.png', zoom=3, scr_w=SCR_W, scr_h=SCR_H, colors=COLORS.values())
+        self.font = BitmapFont('gfx/heimatfont.png', scr_w=SCR_W, scr_h=SCR_H)
+        self.font_big = BitmapFont('gfx/heimatfont.png', zoom=2, scr_w=SCR_W, scr_h=SCR_H)
+        self.font_huge = BitmapFont('gfx/heimatfont.png', zoom=3, scr_w=SCR_W, scr_h=SCR_H)
 
         self.logo = pygame.image.load('gfx/tb-logo-pure-1.png')
         self.logo_filled = pygame.image.load('gfx/tb-logo-pure-2.png')
@@ -343,21 +355,21 @@ class Game():
         else:
             title_color = COLORS['white']
 
-        self.font_huge.centerText(self.output, 'TOOLBOX', y=2, fgcolor=title_color)
-        self.font_huge.centerText(self.output, 'HEXAGON', y=3, fgcolor=title_color)
+        self.font_huge.centerText(self.output, 'TOOLBOX', y=2, fgcolor=brightness(title_color))
+        self.font_huge.centerText(self.output, 'HEXAGON', y=3, fgcolor=brightness(title_color))
 
         if self.tick % 24 < 16:
-            self.font.centerText(self.output, 'PRESS BUTTON', y=SCR_H//8 * 0.75, fgcolor=COLORS['white'])
+            self.font.centerText(self.output, 'PRESS BUTTON', y=SCR_H//8 * 0.75, fgcolor=brightness(COLORS['white']))
 
 
     def drawScoreboard(self):
         #y = SCR_H/8 -2
         y = 0
 
-        self.font.drawText(self.output, 'HI', x=1, y=y, fgcolor=COLORS['white'])
-        self.font.drawText(self.output, '00000', x=1, y=y+1, fgcolor=COLORS['white'])
-        self.font.drawText(self.output, '1UP', x=SCR_W/8-4, y=y, fgcolor=COLORS['white'])
-        self.font.drawText(self.output, '00000', x=SCR_W/8-6, y=y+1, fgcolor=COLORS['white'])
+        self.font.drawText(self.output, 'HI', x=1, y=y, fgcolor=brightness(COLORS['white']))
+        self.font.drawText(self.output, '00000', x=1, y=y+1, fgcolor=brightness(COLORS['white']))
+        self.font.drawText(self.output, '1UP', x=SCR_W/8-4, y=y, fgcolor=brightness(COLORS['white']))
+        self.font.drawText(self.output, '00000', x=SCR_W/8-6, y=y+1, fgcolor=brightness(COLORS['white']))
 
 
     def drawPrintlog(self):
@@ -371,7 +383,7 @@ class Game():
                 outlines.append(s)
 
         for line in outlines[-maxlines:]:
-            self.font.drawText(self.output, line.upper(), x=1, fgcolor=COLORS['white'])
+            self.font.drawText(self.output, line.upper(), x=1, fgcolor=brightness(COLORS['white']))
 
 
     def drawDebugInfo(self):
@@ -426,6 +438,12 @@ class Game():
                     self.player.ydir = -1
                 elif e.key == pygame.K_DOWN or e.key == pygame.K_s:
                     self.player.ydir = 1
+
+                global brightnessValue
+                if e.key == pygame.K_F1:
+                    brightnessValue -= 1
+                elif e.key == pygame.K_F2:
+                    brightnessValue = min(brightnessValue + 1, 0)
 
                 if self.mode == 'boot':
                     self.setMode('title')

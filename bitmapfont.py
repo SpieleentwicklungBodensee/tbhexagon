@@ -18,21 +18,19 @@ class BitmapFont(object):
 
         self.fonts = {}
 
-        if not colors:
-            colors = [(0, 0, 0), (255, 255, 255)]
-
         self.lastcolor = (255, 255, 255)
 
-        for c in colors:
-            font = pygame.image.load(filename)
-            font = pygame.transform.scale(font, (font_w * NUM_CHARS * zoom, font_h * zoom))
-            font.fill(c, special_flags=pygame.BLEND_MULT)
-            self.fonts[c] = font
+        self.font = pygame.image.load(filename)
 
         self.font_w *= zoom
         self.font_h *= zoom
 
         self.textCache = {}
+
+    def loadFont(self, c):
+        f = pygame.transform.scale(self.font, (self.font_w * NUM_CHARS, self.font_h))
+        f.fill(c, special_flags=pygame.BLEND_MULT)
+        self.fonts[c] = f
 
     def drawText(self, output, text, x=None, y=None, fgcolor=None, bgcolor=None, blink=False):
         global tick
@@ -59,6 +57,9 @@ class BitmapFont(object):
                                  len(text) * self.font_w,
                                  (self.font_h))
                                  )
+
+        if fgcolor not in self.fonts:
+            self.loadFont(fgcolor)
 
         if TEXT_CACHING:
             key = (text, fgcolor, bgcolor)
