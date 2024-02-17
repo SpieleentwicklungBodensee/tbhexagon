@@ -23,6 +23,10 @@ if not 'RENDER_MODE' in dir():
 if not 'JOY_DEADZONE' in dir():
     JOY_DEADZONE = 0.2
 
+if not 'DEFAULT_MODE' in dir():
+    # 'boot', 'title', 'game'
+    DEFAULT_MODE = 'boot'
+
 
 # custom print functions
 
@@ -197,7 +201,7 @@ class Game():
 
         self.player = Player(64, 64)
 
-        self.mode = 'boot'  # 'boot', 'title', 'game'
+        self.mode = DEFAULT_MODE
 
 
         print('init joysticks...')
