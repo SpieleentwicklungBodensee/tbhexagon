@@ -4,6 +4,7 @@ import random
 import math
 
 from bitmapfont import BitmapFont
+from particles import Particles
 
 
 # read settings from settings.py
@@ -267,6 +268,8 @@ class Game():
 
         self.camera = Camera()
 
+        self.particles = Particles()
+
         self.score = 0
         self.highscore = 0
 
@@ -307,6 +310,8 @@ class Game():
             self.drawTunnel()
             self.drawScoreboard()
             self.drawTitle()
+
+        self.particles.update_and_render(self.output,self.player,SCR_W,SCR_H)
 
         self.drawPrintlog()
         #self.drawDebugInfo()
@@ -413,6 +418,7 @@ class Game():
                                              self.player_drawy - wall.collisionSprite_ypos)) is not None:
                     self.collisionInfo = (wall.collisionSprite, wall.collisionSprite_xpos, wall.collisionSprite_ypos)
                     self.gameover = True
+                    self.particles.player_death(self.player)
                     return
 
                 mask = pygame.mask.from_surface(wall.inverseSprite)
