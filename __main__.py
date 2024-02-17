@@ -6,13 +6,24 @@ import math
 from bitmapfont import BitmapFont
 
 
-# 'led' = for led wall output
-# 'plain' = for pc/laptop or testing
-# 'sim' = led simulation for uli
-RENDER_MODE = 'plain'
+# read settings from settings.py
+# use default values if no settings.py exists
+
+try:
+    from settings import *
+except ImportError:
+    pass
+
+if not 'RENDER_MODE' in dir():
+    # 'led' = for led wall output
+    # 'plain' = for pc/laptop or testing
+    # 'sim' = led simulation for uli
+    RENDER_MODE = 'led'
+
+
+# custom print functions
 
 PRINTLOG = []
-
 
 __oldprint = print
 def __newprint(msg):
@@ -23,6 +34,8 @@ print = __newprint
 def cls():
     PRINTLOG.clear()
 
+
+# vector draw/render functions
 
 def draw_lines(surface,rot,size,verts):
     verts_final=[]
@@ -62,6 +75,8 @@ def rotate(origin, point, angle):
     qy = oy + math.sin(angle) * (px - ox) + math.cos(angle) * (py - oy)
     return qx, qy
 
+
+# the game
 
 SCR_W, SCR_H = 256, 320     # the 'designed' resolution for the game
 WIN_W, WIN_H = 1024, 1280   # window size for led simulation mode
