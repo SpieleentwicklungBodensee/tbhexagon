@@ -307,9 +307,9 @@ class Game():
 
             elif e.type == pygame.JOYAXISMOTION:
                 if e.axis == 0:
-                    self.player.xdir = e.value
+                    self.player.xdir = e.value if abs(e.value) > 0.05 else 0
                 elif e.axis == 1:
-                    self.player.ydir = e.value
+                    self.player.ydir = e.value if abs(e.value) > 0.05 else 0
 
             elif e.type == pygame.JOYBUTTONDOWN:
                 if self.mode == 'boot':
