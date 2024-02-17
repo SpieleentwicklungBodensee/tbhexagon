@@ -33,7 +33,7 @@ def gamma(v):
 
 def brightness(color):
     color = list(color)
-    if isinstance(color[0], list | tuple):
+    if isinstance(color[0], (list, tuple)):
         result = []
         for co in color:
             result.append(tuple([gamma(c) for c in co]))
