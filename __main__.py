@@ -46,6 +46,7 @@ def cls():
 
 FIRST_PERSON = not False
 LOGO_FILLED = pygame.image.load('gfx/tb-logo-pure-2.png')
+LOGO_INVERSE = pygame.image.load('gfx/tb-logo-inverse.png')
 
 class Wall:
     def __init__(self):
@@ -55,9 +56,13 @@ class Wall:
         self.rot_vel=0
         self.color=(255,0,0)
         self.collisionSprite = None
+        self.inverseSprite = None
+        self.score = 10
+
     def update(self):
         self.pos=(self.pos[0]+self.vel[0],self.pos[1]+self.vel[1],self.pos[2]+self.vel[2])
         self.rot+=self.rot_vel
+
     def render(self,surface,x,y):
         if self.pos[2]<=0: return
         size=2560/self.pos[2]
@@ -78,8 +83,20 @@ class Wall:
             self.collisionSprite = img
             self.collisionSprite_xpos = img_x
             self.collisionSprite_ypos = img_y
+
+            # inverse collision logo
+            img=pygame.transform.scale(LOGO_INVERSE,(size,size))
+            #img.set_alpha(128)
+            img=pygame.transform.rotate(img,self.rot)
+            img_x=(SCR_W-img.get_width() )/2-x*xy_mul*size
+            img_y=(SCR_H-img.get_height())/2-y*xy_mul*size
+
+            self.inverseSprite = img
+            self.inverseSprite_xpos = img_x
+            self.inverseSprite_ypos = img_y
         else:
             self.collisionSprite = None
+            self.inverseSprite = None
 
         draw_lines(surface,color,-x*xy_mul*size,-y*xy_mul*size,self.rot,size,[[26.261813, -13.008806], [26.249923, -13.001606], [26.237643, -13.008806], [26.225762999999997, -12.987656], [-7.500179600000006, 6.467753700000001], [-7.5574196000000065, 6.467753700000001], [-7.5465796000000065, 46.014574], [26.26750099999999, 65.508813], [60.05742099999999, 46.016152000000005], [60.05742099999999, 30.444071], [59.99233099999999, 30.444071], [60.05742099999999, 30.331587000000003], [53.08590099999999, 26.310009], [60.05742099999999, 22.288034], [60.05532099999999, 22.284334], [60.05742099999999, 22.283234], [60.05742099999999, 6.5575257], [60.02442099999999, 6.5575257], [60.05742099999999, 6.5007557], [26.27370599999999, -12.987662], [26.26182599999999, -13.008812]]);
         draw_lines(surface,color,-x*xy_mul*size,-y*xy_mul*size,self.rot,size,[[29.62222799999999, 28.488001000000004], [29.62222799999999, 28.488001000000004], [29.67740799999999, -2.853285299999996], [53.05539799999999, 10.545036000000003], [53.05539799999999, 18.243743000000002], [46.07939099999999, 22.267830000000004], [38.97228299999999, 18.167961000000005], [38.97228299999999, 26.251254000000003], [53.05539799999999, 34.375341000000006], [53.05539799999999, 41.971861000000004], [26.256672, 57.431595], [-0.55549667, 41.96421], [-0.55549667, 10.545041], [22.62034, -2.8120226], [22.62034, 24.438571], [17.035071, 21.20808], [10.032657999999998, 25.247745], [30.968867999999997, 37.359877999999995], [37.974318, 33.318099999999994], [29.622223999999996, 28.488006999999996]]);
@@ -218,6 +235,7 @@ class Game():
 
         self.logo = pygame.image.load('gfx/tb-logo-pure-1.png')
         self.logo_filled = pygame.image.load('gfx/tb-logo-pure-2.png')
+        self.logo_inverse = pygame.image.load('gfx/tb-logo-inverse.png')
 
         self.collisionInfo = None
 
@@ -235,7 +253,13 @@ class Game():
 
         self.camera = Camera()
 
+        self.score = 0
+        self.highscore = 0
+
         self.mode = DEFAULT_MODE
+
+        self.gameover = False
+        self.gameover_cnt = 0
 
 
         print('init joysticks...')
@@ -257,7 +281,12 @@ class Game():
 
         if self.mode == 'game':
             self.drawTunnel()
-            self.drawPlayer()
+
+            if self.gameover:
+                self.drawGameover()
+            else:
+                self.drawPlayer()
+
             self.drawScoreboard()
 
         elif self.mode == 'title':
@@ -266,7 +295,7 @@ class Game():
             self.drawTitle()
 
         self.drawPrintlog()
-        self.drawDebugInfo()
+        #self.drawDebugInfo()
 
         # compose and zoom
         if RENDER_MODE == 'plain':
@@ -355,9 +384,9 @@ class Game():
         y = 0
 
         self.font.drawText(self.output, 'HI', x=1, y=y, fgcolor=COLORS['white'])
-        self.font.drawText(self.output, '00000', x=1, y=y+1, fgcolor=COLORS['white'])
+        self.font.drawText(self.output, '%05i' % self.highscore, x=1, y=y+1, fgcolor=COLORS['white'])
         self.font.drawText(self.output, '1UP', x=SCR_W/8-4, y=y, fgcolor=COLORS['white'])
-        self.font.drawText(self.output, '00000', x=SCR_W/8-6, y=y+1, fgcolor=COLORS['white'])
+        self.font.drawText(self.output, '%05i' % self.score, x=SCR_W/8-6, y=y+1, fgcolor=COLORS['white'])
 
 
     def drawPrintlog(self):
@@ -386,6 +415,13 @@ class Game():
 
             time.sleep(0.05)
 
+            self.collisionInfo = None
+
+
+    def drawGameover(self):
+        if self.gameover_cnt > 30:
+            self.font_huge.centerText(self.output, 'GAME OVER', y=(SCR_H/self.font_huge.font_h)/2, fgcolor=COLORS['white'])
+
 
     def collisionCheck(self):
         playermask = pygame.mask.from_surface(self.copter_sprites[0])
@@ -399,6 +435,16 @@ class Game():
                 if mask.overlap(playermask, (self.player_drawx - wall.collisionSprite_xpos,
                                              self.player_drawy - wall.collisionSprite_ypos)) is not None:
                     self.collisionInfo = (wall.collisionSprite, wall.collisionSprite_xpos, wall.collisionSprite_ypos)
+                    self.gameover = True
+                    return
+
+                mask = pygame.mask.from_surface(wall.inverseSprite)
+
+                if mask.overlap(playermask, (self.player_drawx - wall.inverseSprite_xpos,
+                                             self.player_drawy - wall.inverseSprite_ypos)) is not None:
+                    #self.collisionInfo = (wall.inverseSprite, wall.inverseSprite_xpos, wall.inverseSprite_ypos)
+                    self.score += wall.score
+                    wall.score = 0
 
 
     def controls(self):
@@ -430,7 +476,7 @@ class Game():
                 if self.mode == 'boot':
                     self.setMode('title')
                 elif self.mode == 'title':
-                    self.setMode('game')
+                    self.newGame()
 
             elif e.type == pygame.KEYUP:
                 if e.key == pygame.K_LEFT or e.key == pygame.K_a:
@@ -456,7 +502,7 @@ class Game():
                 if self.mode == 'boot':
                     self.setMode('title')
                 elif self.mode == 'title':
-                    self.setMode('game')
+                    self.newGame()
 
 
     def update(self):
@@ -499,16 +545,49 @@ class Game():
             if wall.pos[2]>0: new_walls.append(wall)
         self.walls = new_walls
 
-        self.player.update(self.camera)
-
         self.camera.update(self.player)
 
-        self.collisionCheck()
+        if not self.gameover:
+            self.player.update(self.camera)
+            self.collisionCheck()
+
+        if self.gameover:
+            self.gameover_cnt += 1
+
+            if self.gameover_cnt == 200:
+                self.backToTitle()
 
 
     def setMode(self, mode):
         self.mode = mode
         cls()
+
+
+    def backToTitle(self):
+        self.setMode('title')
+
+        self.player.xpos = 0
+        self.player.ypos = 0
+
+        if self.score > self.highscore:
+            self.highscore = self.score
+
+
+    def newGame(self):
+        self.score = 0
+
+        self.walls = []
+        self.tick = 0
+
+        self.player.xpos = 0
+        self.player.ypos = 0
+
+        self.gameover = False
+        self.gameover_cnt = 0
+
+        self.collisionInfo = False
+
+        self.setMode('game')
 
 
     def start(self):
