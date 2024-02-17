@@ -300,13 +300,13 @@ class Game():
                     if modstate & pygame.KMOD_ALT:
                         pygame.display.toggle_fullscreen()
 
-                if e.key == pygame.K_LEFT:
+                if e.key == pygame.K_LEFT or e.key == pygame.K_a:
                     self.player.xdir = -1
-                elif e.key == pygame.K_RIGHT:
+                elif e.key == pygame.K_RIGHT or e.key == pygame.K_d:
                     self.player.xdir = 1
-                elif e.key == pygame.K_UP:
+                elif e.key == pygame.K_UP or e.key == pygame.K_w:
                     self.player.ydir = -1
-                elif e.key == pygame.K_DOWN:
+                elif e.key == pygame.K_DOWN or e.key == pygame.K_s:
                     self.player.ydir = 1
 
                 if self.mode == 'boot':
@@ -315,16 +315,16 @@ class Game():
                     self.setMode('game')
 
             elif e.type == pygame.KEYUP:
-                if e.key == pygame.K_LEFT:
+                if e.key == pygame.K_LEFT or e.key == pygame.K_a:
                     if self.player.xdir < 0:
                         self.player.xdir = 0
-                elif e.key == pygame.K_RIGHT:
+                elif e.key == pygame.K_RIGHT or e.key == pygame.K_d:
                     if self.player.xdir > 0:
                         self.player.xdir = 0
-                elif e.key == pygame.K_UP:
+                elif e.key == pygame.K_UP or e.key == pygame.K_w:
                     if self.player.ydir < 0:
                         self.player.ydir = 0
-                elif e.key == pygame.K_DOWN:
+                elif e.key == pygame.K_DOWN or e.key == pygame.K_s:
                     if self.player.ydir > 0:
                         self.player.ydir = 0
 
