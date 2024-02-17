@@ -41,6 +41,12 @@ def brightness(color):
         return result
     return tuple([gamma(c) for c in color])
 
+def colorize(surface, color):
+    color = brightness(color)
+    s = surface.copy()
+    s.fill(color, special_flags=pygame.BLEND_MULT)
+    return s
+
 # custom print functions
 
 PRINTLOG = []
@@ -58,7 +64,7 @@ def cls():
 # vector draw/render functions
 
 FIRST_PERSON = not False
-LOGO_FILLED = pygame.image.load('gfx/tb-logo-pure-2.png')
+LOGO_FILLED = pygame.image.load('gfx/tb-logo-white.png')
 LOGO_INVERSE = pygame.image.load('gfx/tb-logo-inverse.png')
 
 class Wall:
@@ -91,7 +97,7 @@ class Wall:
             img=pygame.transform.rotate(img,self.rot)
             img_x=(SCR_W-img.get_width() )/2-x*xy_mul*size
             img_y=(SCR_H-img.get_height())/2-y*xy_mul*size
-            #surface.blit(img,(img_x,img_y))
+            surface.blit(colorize(img, self.color),(img_x,img_y))
 
             self.collisionSprite = img
             self.collisionSprite_xpos = img_x
@@ -342,7 +348,7 @@ class Game():
         x = SCR_W/2+self.player.xpos-self.camera.xpos-sprite.get_width()/2
         y = SCR_H/2+self.player.ypos-self.camera.ypos-sprite.get_height()/2
 
-        self.output.blit(sprite, (x, y))
+        self.output.blit(colorize(sprite, (255,255,255)), (x, y))
 
         self.player_drawx = x   # for collision
         self.player_drawy = y   # for collision
