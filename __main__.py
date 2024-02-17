@@ -11,6 +11,15 @@ from bitmapfont import BitmapFont
 # 'sim' = led simulation for uli
 RENDER_MODE = 'plain'
 
+BOOTLOG = []
+
+
+__oldprint = print
+def __newprint(msg):
+    BOOTLOG.append(msg)
+    __oldprint(msg)
+print = __newprint
+
 
 def draw_lines(surface,rot,size,verts):
     verts_final=[]
@@ -65,11 +74,35 @@ SPEED = 1.0 / 128
 pygame.display.init()
 
 
+class Player():
+    def __init__(self, x, y):
+        self.xpos = x
+        self.ypos = y
+
+        self.xdir = 0
+        self.ydir = 0
+
+    def update(self):
+        self.xpos += self.xdir
+        self.ypos += self.ydir
+
+
 class Game():
     def __init__(self):
+        print('')
+        print('welcome to toolbox hexagon\n')
+
+        # surfaces explained:
+        # -------------------
+        # self.output = the render target
+        # self.window = the actual ui window
+        # self.scaled = scale surface to distort output
+        # self.overlay = overlay for masking or simulating leds
+
         if RENDER_MODE == 'plain':
             self.window = pygame.display.set_mode((SCR_W, SCR_H), flags=pygame.SCALED)
             self.output = self.window
+
         if RENDER_MODE == 'led':
             self.window = pygame.display.set_mode((1920, 1080), flags=pygame.FULLSCREEN)
             self.output = pygame.Surface((SCR_W, SCR_H))
@@ -103,6 +136,8 @@ class Game():
 
         self.running = False
 
+        print('loading graphics...')
+
         self.font = BitmapFont('gfx/heimatfont.png', scr_w=SCR_W, scr_h=SCR_H, colors=COLORS.values())
         self.font_big = BitmapFont('gfx/heimatfont.png', zoom=2, scr_w=SCR_W, scr_h=SCR_H, colors=COLORS.values())
         self.font_huge = BitmapFont('gfx/heimatfont.png', zoom=3, scr_w=SCR_W, scr_h=SCR_H, colors=COLORS.values())
@@ -110,16 +145,64 @@ class Game():
         self.logo = pygame.image.load('gfx/tb-logo-pure-1.png')
         self.logo_filled = pygame.image.load('gfx/tb-logo-pure-2.png')
 
+        self.copter_sprites = (pygame.image.load('gfx/copter1.png'), pygame.image.load('gfx/copter2.png'))
+
         self.tick = 0
 
         self.logos = [(3, 40),
                       (2, 20),
                       (1, 0),]   # distance, rotation
 
+        self.player = Player(64, 64)
+
+        self.mode = 'boot'  # 'boot', 'title', 'game'
+
+
+        print('init joysticks...')
+        pygame.joystick.init()
+        if not pygame.joystick.get_count():
+            print('no joystick detected')
+        else:
+            print('found joysticks:')
+            for i in range(pygame.joystick.get_count()):
+                self.joy = pygame.joystick.Joystick(i)
+                self.joy.init()
+                print(' - ' + self.joy.get_name())
+
+        print('\ninit complete')
+        print('press button or key')
 
     def render(self):
         self.output.fill((0, 0, 0))
 
+        if self.mode == 'game':
+            self.drawTunnel()
+            self.drawPlayer()
+            self.drawScoreboard()
+
+        elif self.mode == 'title':
+            self.drawTunnel()
+            self.drawScoreboard()
+            self.drawTitle()
+
+        elif self.mode == 'boot':
+            self.drawBootlog()
+
+        # compose and zoom
+        if RENDER_MODE == 'plain':
+            pass
+        if RENDER_MODE == 'led':
+            pygame.transform.scale(self.output, (SCR_W * 2, SCR_H), self.scaled)
+            self.window.blit(self.scaled, (0, 0))
+            self.window.blit(self.overlay, (0, 0))
+        elif RENDER_MODE == 'sim':
+            pygame.transform.scale(self.output, (WIN_W, WIN_H), self.window)
+            self.window.blit(self.overlay, (0, 0))
+
+        pygame.display.flip()
+
+
+    def drawTunnel(self):
         for dist, rot in sorted(self.logos,key=lambda x: -x[0]):
             size = 1.0 / dist * DISTANCE
             alpha = size / 128 * 255 + 64
@@ -154,37 +237,38 @@ class Game():
 
             if logo_sprite == self.logo_filled: self.output.blit(scaled, (x, y))
 
-            draw_lines(self.output,rot,size,[[26.261813, -13.008806], [26.249923, -13.001606], [26.237643, -13.008806], [26.225762999999997, -12.987656], [-7.500179600000006, 6.467753700000001], [-7.5574196000000065, 6.467753700000001], [-7.5465796000000065, 46.014574], [26.26750099999999, 65.508813], [60.05742099999999, 46.016152000000005], [60.05742099999999, 30.444071], [59.99233099999999, 30.444071], [60.05742099999999, 30.331587000000003], [53.08590099999999, 26.310009], [60.05742099999999, 22.288034], [60.05532099999999, 22.284334], [60.05742099999999, 22.283234], [60.05742099999999, 6.5575257], [60.02442099999999, 6.5575257], [60.05742099999999, 6.5007557], [26.27370599999999, -12.987662], [26.26182599999999, -13.008812]]);
-            draw_lines(self.output,rot,size,[[29.62222799999999, 28.488001000000004], [29.62222799999999, 28.488001000000004], [29.67740799999999, -2.853285299999996], [53.05539799999999, 10.545036000000003], [53.05539799999999, 18.243743000000002], [46.07939099999999, 22.267830000000004], [38.97228299999999, 18.167961000000005], [38.97228299999999, 26.251254000000003], [53.05539799999999, 34.375341000000006], [53.05539799999999, 41.971861000000004], [26.256672, 57.431595], [-0.55549667, 41.96421], [-0.55549667, 10.545041], [22.62034, -2.8120226], [22.62034, 24.438571], [17.035071, 21.20808], [10.032657999999998, 25.247745], [30.968867999999997, 37.359877999999995], [37.974318, 33.318099999999994], [29.622223999999996, 28.488006999999996]]);
+            draw_lines(self.output,rot,size,[[26.261813, -13.008806], [26.249923, -13.001606], [26.237643, -13.008806], [26.225762999999997, -12.987656], [-7.500179600000006, 6.467753700000001], [-7.5574196000000065, 6.467753700000001], [-7.5465796000000065, 46.014574], [26.26750099999999, 65.508813], [60.05742099999999, 46.016152000000005], [60.05742099999999, 30.444071], [59.99233099999999, 30.444071], [60.05742099999999, 30.331587000000003], [53.08590099999999, 26.310009], [60.05742099999999, 22.288034], [60.05532099999999, 22.284334], [60.05742099999999, 22.283234], [60.05742099999999, 6.5575257], [60.02442099999999, 6.5575257], [60.05742099999999, 6.5007557], [26.27370599999999, -12.987662], [26.26182599999999, -13.008812]])
+            draw_lines(self.output,rot,size,[[29.62222799999999, 28.488001000000004], [29.62222799999999, 28.488001000000004], [29.67740799999999, -2.853285299999996], [53.05539799999999, 10.545036000000003], [53.05539799999999, 18.243743000000002], [46.07939099999999, 22.267830000000004], [38.97228299999999, 18.167961000000005], [38.97228299999999, 26.251254000000003], [53.05539799999999, 34.375341000000006], [53.05539799999999, 41.971861000000004], [26.256672, 57.431595], [-0.55549667, 41.96421], [-0.55549667, 10.545041], [22.62034, -2.8120226], [22.62034, 24.438571], [17.035071, 21.20808], [10.032657999999998, 25.247745], [30.968867999999997, 37.359877999999995], [37.974318, 33.318099999999994], [29.622223999999996, 28.488006999999996]])
 
-            #for x in range(0,SCR_W,2):
-            #    pygame.draw.line(self.output,(0,0,0),(x,0),(x,SCR_H))
 
+    def drawPlayer(self):
+        anim = (self.tick // 3) % 2
+        sprite = self.copter_sprites[anim]
+        self.output.blit(sprite, (self.player.xpos, self.player.ypos))
+
+
+    def drawTitle(self):
         if int(time.time() * 1000) % 500 < 250:
             title_color = COLORS['red']
         else:
             title_color = COLORS['white']
 
-        #self.font_huge.centerText(self.output, 'TOOLBOX', y=2, fgcolor=title_color)
-        #self.font_huge.centerText(self.output, 'HEXAGON', y=3, fgcolor=title_color)
+        self.font_huge.centerText(self.output, 'TOOLBOX', y=2, fgcolor=title_color)
+        self.font_huge.centerText(self.output, 'HEXAGON', y=3, fgcolor=title_color)
 
+
+    def drawScoreboard(self):
         self.font.drawText(self.output, 'HI', x=1, y=SCR_H/8-2, fgcolor=COLORS['white'])
         self.font.drawText(self.output, '00000', x=1, y=SCR_H/8-1, fgcolor=COLORS['white'])
         self.font.drawText(self.output, '1UP', x=SCR_W/8-4, y=SCR_H/8-2, fgcolor=COLORS['white'])
         self.font.drawText(self.output, '00000', x=SCR_W/8-6, y=SCR_H/8-1, fgcolor=COLORS['white'])
 
-        # compose and zoom
-        if RENDER_MODE == 'plain':
-            pass
-        if RENDER_MODE == 'led':
-            pygame.transform.scale(self.output, (SCR_W * 2, SCR_H), self.scaled)
-            self.window.blit(self.scaled, (0, 0))
-            self.window.blit(self.overlay, (0, 0))
-        elif RENDER_MODE == 'sim':
-            pygame.transform.scale(self.output, (WIN_W, WIN_H), self.window)
-            self.window.blit(self.overlay, (0, 0))
 
-        pygame.display.flip()
+    def drawBootlog(self):
+        self.font.locate(0, 0)
+        for msg in BOOTLOG:
+            for s in str(msg).split('\n'):
+                self.font.drawText(self.output, s.upper(), x=1, fgcolor=COLORS['white'])
 
 
     def controls(self):
@@ -204,6 +288,22 @@ class Game():
                     if modstate & pygame.KMOD_ALT:
                         pygame.display.toggle_fullscreen()
 
+                if self.mode == 'boot':
+                    self.mode = 'title'
+                elif self.mode == 'title':
+                    self.mode = 'game'
+
+            elif e.type == pygame.JOYAXISMOTION:
+                if e.axis == 0:
+                    self.player.xdir = e.value
+                elif e.axis == 1:
+                    self.player.ydir = e.value
+
+            elif e.type == pygame.JOYBUTTONDOWN:
+                if self.mode == 'boot':
+                    self.mode = 'title'
+                elif self.mode == 'title':
+                    self.mode = 'game'
 
 
     def update(self):
@@ -219,6 +319,8 @@ class Game():
             newlogos.append((dist, rot))
 
         self.logos = newlogos
+
+        self.player.update()
 
 
     def start(self):
