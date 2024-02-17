@@ -90,7 +90,7 @@ class Wall:
             img=pygame.transform.rotate(img,self.rot)
             img_x=(SCR_W-img.get_width() )/2-x*xy_mul*size
             img_y=(SCR_H-img.get_height())/2-y*xy_mul*size
-            surface.blit(img,(img_x,img_y))
+            #surface.blit(img,(img_x,img_y))
 
             self.collisionSprite = img
             self.collisionSprite_xpos = img_x
@@ -434,7 +434,7 @@ class Game():
 
     def drawGameover(self):
         if self.gameover_cnt > 30:
-            self.font_huge.centerText(self.output, 'GAME OVER', y=(SCR_H/self.font_huge.font_h)/2, fgcolor=COLORS['white'])
+            self.font_huge.centerText(self.output, 'GAME OVER', y=(SCR_H/self.font_huge.font_h)/2, fgcolor=brightness(COLORS['white']))
 
 
     def collisionCheck(self):
