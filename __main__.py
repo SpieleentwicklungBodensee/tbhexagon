@@ -250,13 +250,16 @@ class Game():
 
 
     def drawTitle(self):
-        if int(time.time() * 1000) % 500 < 250:
+        if self.tick % 32 < 16:
             title_color = COLORS['red']
         else:
             title_color = COLORS['white']
 
         self.font_huge.centerText(self.output, 'TOOLBOX', y=2, fgcolor=title_color)
         self.font_huge.centerText(self.output, 'HEXAGON', y=3, fgcolor=title_color)
+
+        if self.tick % 24 < 16:
+            self.font.centerText(self.output, 'PRESS BUTTON', y=SCR_H//8 * 0.75, fgcolor=COLORS['white'])
 
 
     def drawScoreboard(self):
