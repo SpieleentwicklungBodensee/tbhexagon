@@ -1,5 +1,2 @@
-__pycache__/bitmapfont.cpython-310.pyc
-__pycache__/bitmapfont.cpython-38.pyc
-__pycache__/__main__.cpython-38.pyc
-__pycache__/settings.*
+__pycache__/*
 settings.py
