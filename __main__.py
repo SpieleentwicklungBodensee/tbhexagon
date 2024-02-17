@@ -63,8 +63,8 @@ def rotate(origin, point, angle):
     return qx, qy
 
 
-WIN_W, WIN_H = 1024, 1024
-SCR_W, SCR_H = 256, 256     # the 'virtual' resolution
+SCR_W, SCR_H = 256, 320     # the 'designed' resolution for the game
+WIN_W, WIN_H = 1024, 1280   # window size for led simulation mode
 
 COLORS = {'red': (255, 0, 0),
           'white': (255, 255, 255),
@@ -260,10 +260,13 @@ class Game():
 
 
     def drawScoreboard(self):
-        self.font.drawText(self.output, 'HI', x=1, y=SCR_H/8-2, fgcolor=COLORS['white'])
-        self.font.drawText(self.output, '00000', x=1, y=SCR_H/8-1, fgcolor=COLORS['white'])
-        self.font.drawText(self.output, '1UP', x=SCR_W/8-4, y=SCR_H/8-2, fgcolor=COLORS['white'])
-        self.font.drawText(self.output, '00000', x=SCR_W/8-6, y=SCR_H/8-1, fgcolor=COLORS['white'])
+        #y = SCR_H/8 -2
+        y = 0
+
+        self.font.drawText(self.output, 'HI', x=1, y=y, fgcolor=COLORS['white'])
+        self.font.drawText(self.output, '00000', x=1, y=y+1, fgcolor=COLORS['white'])
+        self.font.drawText(self.output, '1UP', x=SCR_W/8-4, y=y, fgcolor=COLORS['white'])
+        self.font.drawText(self.output, '00000', x=SCR_W/8-6, y=y+1, fgcolor=COLORS['white'])
 
 
     def drawPrintlog(self):
