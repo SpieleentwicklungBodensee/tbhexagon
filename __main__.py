@@ -11,14 +11,17 @@ from bitmapfont import BitmapFont
 # 'sim' = led simulation for uli
 RENDER_MODE = 'plain'
 
-BOOTLOG = []
+PRINTLOG = []
 
 
 __oldprint = print
 def __newprint(msg):
-    BOOTLOG.append(msg)
+    PRINTLOG.append(msg)
     __oldprint(msg)
 print = __newprint
+
+def cls():
+    PRINTLOG.clear()
 
 
 def draw_lines(surface,rot,size,verts):
@@ -185,8 +188,7 @@ class Game():
             self.drawScoreboard()
             self.drawTitle()
 
-        elif self.mode == 'boot':
-            self.drawBootlog()
+        self.drawPrintlog()
 
         # compose and zoom
         if RENDER_MODE == 'plain':
@@ -264,9 +266,9 @@ class Game():
         self.font.drawText(self.output, '00000', x=SCR_W/8-6, y=SCR_H/8-1, fgcolor=COLORS['white'])
 
 
-    def drawBootlog(self):
+    def drawPrintlog(self):
         self.font.locate(0, 0)
-        for msg in BOOTLOG:
+        for msg in PRINTLOG:
             for s in str(msg).split('\n'):
                 self.font.drawText(self.output, s.upper(), x=1, fgcolor=COLORS['white'])
 
@@ -289,9 +291,9 @@ class Game():
                         pygame.display.toggle_fullscreen()
 
                 if self.mode == 'boot':
-                    self.mode = 'title'
+                    self.setMode('title')
                 elif self.mode == 'title':
-                    self.mode = 'game'
+                    self.setMode('game')
 
             elif e.type == pygame.JOYAXISMOTION:
                 if e.axis == 0:
@@ -301,9 +303,9 @@ class Game():
 
             elif e.type == pygame.JOYBUTTONDOWN:
                 if self.mode == 'boot':
-                    self.mode = 'title'
+                    self.setMode('title')
                 elif self.mode == 'title':
-                    self.mode = 'game'
+                    self.setMode('game')
 
 
     def update(self):
@@ -321,6 +323,11 @@ class Game():
         self.logos = newlogos
 
         self.player.update()
+
+
+    def setMode(self, mode):
+        self.mode = mode
+        cls()
 
 
     def start(self):
