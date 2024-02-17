@@ -5,6 +5,13 @@ import math
 
 from bitmapfont import BitmapFont
 
+
+# 'led' = for led wall output
+# 'plain' = for pc/laptop or testing
+# 'sim' = led simulation for uli
+RENDER_MODE = 'plain'
+
+
 def draw_lines(surface,rot,size,verts):
     verts_final=[]
     for v in verts:
@@ -43,8 +50,9 @@ def rotate(origin, point, angle):
     qy = oy + math.sin(angle) * (px - ox) + math.cos(angle) * (py - oy)
     return qx, qy
 
+
 WIN_W, WIN_H = 1024, 1024
-SCR_W, SCR_H = 256, 256
+SCR_W, SCR_H = 256, 256     # the 'virtual' resolution
 
 COLORS = {'red': (255, 0, 0),
           'white': (255, 255, 255),
@@ -54,8 +62,6 @@ COLORS = {'red': (255, 0, 0),
 DISTANCE = 64
 SPEED = 1.0 / 128
 
-RENDER_MODE = 'plain'     # 'plain', 'led'
-
 pygame.display.init()
 
 
@@ -64,7 +70,16 @@ class Game():
         if RENDER_MODE == 'plain':
             self.window = pygame.display.set_mode((SCR_W, SCR_H), flags=pygame.SCALED)
             self.output = self.window
-        elif RENDER_MODE == 'led':
+        if RENDER_MODE == 'led':
+            self.window = pygame.display.set_mode((1920, 1080), flags=pygame.FULLSCREEN)
+            self.output = pygame.Surface((SCR_W, SCR_H))
+            self.scaled = pygame.Surface((SCR_W * 2, SCR_H))
+            self.overlay = pygame.Surface((SCR_W * 2, SCR_H), flags=pygame.SRCALPHA)
+
+            for x in range(SCR_W):
+                pygame.draw.line(self.overlay, (0, 0, 0), (x * 2, 0), (x * 2, SCR_H))
+
+        elif RENDER_MODE == 'sim':
             self.window = pygame.display.set_mode((WIN_W, WIN_H))
             self.output = pygame.Surface((SCR_W, SCR_H))
             self.overlay = pygame.Surface((WIN_W, WIN_H), flags=pygame.SRCALPHA)
@@ -161,7 +176,11 @@ class Game():
         # compose and zoom
         if RENDER_MODE == 'plain':
             pass
-        elif RENDER_MODE == 'led':
+        if RENDER_MODE == 'led':
+            pygame.transform.scale(self.output, (SCR_W * 2, SCR_H), self.scaled)
+            self.window.blit(self.scaled, (0, 0))
+            self.window.blit(self.overlay, (0, 0))
+        elif RENDER_MODE == 'sim':
             pygame.transform.scale(self.output, (WIN_W, WIN_H), self.window)
             self.window.blit(self.overlay, (0, 0))
 
