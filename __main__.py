@@ -250,6 +250,8 @@ class Game():
                       (1, 0),]   # distance, rotation
 
         self.player = Player(0, 0)
+        self.player_drawx = SCR_W/2 # for collision
+        self.player_drawy = SCR_H/2 # for collision
 
         self.camera = Camera()
 
