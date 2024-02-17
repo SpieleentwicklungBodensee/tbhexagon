@@ -54,6 +54,7 @@ class Wall:
         self.rot=0
         self.rot_vel=0
         self.color=(255,0,0)
+        self.collisionSprite = None
     def update(self):
         self.pos=(self.pos[0]+self.vel[0],self.pos[1]+self.vel[1],self.pos[2]+self.vel[2])
         self.rot+=self.rot_vel
@@ -73,6 +74,12 @@ class Wall:
             img_x=(SCR_W-img.get_width() )/2+x*xy_mul*size
             img_y=(SCR_H-img.get_height())/2+y*xy_mul*size
             surface.blit(img,(img_x,img_y))
+
+            self.collisionSprite = img
+            self.collisionSprite_xpos = img_x
+            self.collisionSprite_ypos = img_y
+        else:
+            self.collisionSprite = None
 
         draw_lines(surface,color,x*xy_mul*size,y*xy_mul*size,self.rot,size,[[26.261813, -13.008806], [26.249923, -13.001606], [26.237643, -13.008806], [26.225762999999997, -12.987656], [-7.500179600000006, 6.467753700000001], [-7.5574196000000065, 6.467753700000001], [-7.5465796000000065, 46.014574], [26.26750099999999, 65.508813], [60.05742099999999, 46.016152000000005], [60.05742099999999, 30.444071], [59.99233099999999, 30.444071], [60.05742099999999, 30.331587000000003], [53.08590099999999, 26.310009], [60.05742099999999, 22.288034], [60.05532099999999, 22.284334], [60.05742099999999, 22.283234], [60.05742099999999, 6.5575257], [60.02442099999999, 6.5575257], [60.05742099999999, 6.5007557], [26.27370599999999, -12.987662], [26.26182599999999, -13.008812]]);
         draw_lines(surface,color,x*xy_mul*size,y*xy_mul*size,self.rot,size,[[29.62222799999999, 28.488001000000004], [29.62222799999999, 28.488001000000004], [29.67740799999999, -2.853285299999996], [53.05539799999999, 10.545036000000003], [53.05539799999999, 18.243743000000002], [46.07939099999999, 22.267830000000004], [38.97228299999999, 18.167961000000005], [38.97228299999999, 26.251254000000003], [53.05539799999999, 34.375341000000006], [53.05539799999999, 41.971861000000004], [26.256672, 57.431595], [-0.55549667, 41.96421], [-0.55549667, 10.545041], [22.62034, -2.8120226], [22.62034, 24.438571], [17.035071, 21.20808], [10.032657999999998, 25.247745], [30.968867999999997, 37.359877999999995], [37.974318, 33.318099999999994], [29.622223999999996, 28.488006999999996]]);
@@ -202,6 +209,8 @@ class Game():
         self.logo = pygame.image.load('gfx/tb-logo-pure-1.png')
         self.logo_filled = pygame.image.load('gfx/tb-logo-pure-2.png')
 
+        self.collisionInfo = None
+
         self.walls = []
 
         self.copter_sprites = (pygame.image.load('gfx/copter1.png'), pygame.image.load('gfx/copter2.png'))
@@ -245,6 +254,7 @@ class Game():
             self.drawTitle()
 
         self.drawPrintlog()
+        self.drawDebugInfo()
 
         # compose and zoom
         if RENDER_MODE == 'plain':
@@ -348,6 +358,32 @@ class Game():
             self.font.drawText(self.output, line.upper(), x=1, fgcolor=COLORS['white'])
 
 
+    def drawDebugInfo(self):
+        if self.collisionInfo is not None:
+            self.output.fill((40, 40, 40))
+            self.output.blit(self.collisionInfo[0], (self.collisionInfo[1], self.collisionInfo[2]))
+            self.output.blit(self.copter_sprites[0], (self.player.xpos - self.copter_sprites[0].get_width()/2,
+                                                      self.player.ypos - self.copter_sprites[0].get_height()/2))
+
+            pygame.display.flip()
+
+            time.sleep(0.25)
+
+
+    def collisionCheck(self):
+        playermask = pygame.mask.from_surface(self.copter_sprites[0])
+
+        self.collisionInfo = None
+
+        for wall in self.walls:
+            if wall.collisionSprite is not None:
+                mask = pygame.mask.from_surface(wall.collisionSprite)
+
+                if mask.overlap(playermask, ((self.player.xpos - self.copter_sprites[0].get_width() / 2) - wall.collisionSprite_xpos,
+                                             (self.player.ypos - self.copter_sprites[0].get_height() / 2) - wall.collisionSprite_ypos)) is not None:
+                    self.collisionInfo = (wall.collisionSprite, wall.collisionSprite_xpos, wall.collisionSprite_ypos)
+
+
     def controls(self):
         events = pygame.event.get()
 
@@ -447,6 +483,8 @@ class Game():
         self.walls = new_walls
 
         self.player.update()
+
+        self.collisionCheck()
 
 
     def setMode(self, mode):
