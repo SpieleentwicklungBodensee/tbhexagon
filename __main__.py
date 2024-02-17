@@ -44,7 +44,7 @@ def cls():
 
 # vector draw/render functions
 
-FIRST_PERSON = False
+FIRST_PERSON = not False
 LOGO_FILLED = pygame.image.load('gfx/tb-logo-pure-2.png')
 
 class Wall:
@@ -327,7 +327,14 @@ class Game():
     def drawPlayer(self):
         anim = (self.tick // 3) % 2
         sprite = self.copter_sprites[anim]
-        self.output.blit(sprite, (SCR_W/2+self.player.xpos-self.camera.xpos-sprite.get_width()/2, SCR_H/2+self.player.ypos-self.camera.ypos-sprite.get_height()/2))
+
+        x = SCR_W/2+self.player.xpos-self.camera.xpos-sprite.get_width()/2
+        y = SCR_H/2+self.player.ypos-self.camera.ypos-sprite.get_height()/2
+
+        self.output.blit(sprite, (x, y))
+
+        self.player_drawx = x   # for collision
+        self.player_drawy = y   # for collision
 
 
     def drawTitle(self):
@@ -371,12 +378,13 @@ class Game():
         if self.collisionInfo is not None:
             self.output.fill((40, 40, 40))
             self.output.blit(self.collisionInfo[0], (self.collisionInfo[1], self.collisionInfo[2]))
-            self.output.blit(self.copter_sprites[0], (self.player.xpos - self.copter_sprites[0].get_width()/2,
-                                                      self.player.ypos - self.copter_sprites[0].get_height()/2))
+            self.output.blit(self.copter_sprites[0], (self.player_drawx, self.player_drawy))
+
+            self.font_big.centerText(self.output, 'C R A S H', y=(SCR_H/self.font_big.font_h)/2-3)
 
             pygame.display.flip()
 
-            time.sleep(0.25)
+            time.sleep(0.05)
 
 
     def collisionCheck(self):
@@ -388,8 +396,8 @@ class Game():
             if wall.collisionSprite is not None:
                 mask = pygame.mask.from_surface(wall.collisionSprite)
 
-                if mask.overlap(playermask, ((self.player.xpos - self.copter_sprites[0].get_width() / 2) - wall.collisionSprite_xpos,
-                                             (self.player.ypos - self.copter_sprites[0].get_height() / 2) - wall.collisionSprite_ypos)) is not None:
+                if mask.overlap(playermask, (self.player_drawx - wall.collisionSprite_xpos,
+                                             self.player_drawy - wall.collisionSprite_ypos)) is not None:
                     self.collisionInfo = (wall.collisionSprite, wall.collisionSprite_xpos, wall.collisionSprite_ypos)
 
 
@@ -495,7 +503,7 @@ class Game():
 
         self.camera.update(self.player)
 
-        #self.collisionCheck()
+        self.collisionCheck()
 
 
     def setMode(self, mode):
