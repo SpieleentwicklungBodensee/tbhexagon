@@ -91,14 +91,15 @@ class Wall:
         xy_mul=0.01
         if not FIRST_PERSON: xy_mul=0
 
-        if self.pos[2]<8 and self.pos[2]>4:
+        if self.pos[2]>4: 
             img=pygame.transform.scale(LOGO_FILLED,(size,size))
             #img.set_alpha(128)
             img=pygame.transform.rotate(img,self.rot)
             img_x=(SCR_W-img.get_width() )/2-x*xy_mul*size
             img_y=(SCR_H-img.get_height())/2-y*xy_mul*size
-            surface.blit(colorize(img, self.color),(img_x,img_y))
+            surface.blit(colorize(img, (0, 0, 0)),(img_x,img_y))
 
+        if self.pos[2]<8 and self.pos[2]>4:
             self.collisionSprite = img
             self.collisionSprite_xpos = img_x
             self.collisionSprite_ypos = img_y
@@ -528,9 +529,10 @@ class Game():
                 wall.rot_vel=0.2
                 self.walls.append(wall)
         if(wall_style==2):
-            if self.tick%10==0:
+            if self.tick%15==0:
                 wall=Wall()
-                wall.rot_vel-=0.4
+                wall.rot=0.1*self.tick
+                wall.rot_vel-=1.2
                 color_min=30
                 wall.color=(random.randrange(color_min,255),random.randrange(color_min,255),random.randrange(color_min,255))
                 self.walls.append(wall)
