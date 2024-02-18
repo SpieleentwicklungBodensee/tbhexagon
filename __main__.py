@@ -222,6 +222,12 @@ class EventTimer():
         
         return False
     
+    def isPending(name):
+        if not name in EventTimer.events:
+            return False
+        
+        return not EventTimer.isDue(name, False)
+    
     def getTicks(name):
         return EventTimer.events[name][1]
 
@@ -339,6 +345,9 @@ class Game():
 
             self.drawScoreboard()
 
+            if EventTimer.isPending('getready'):
+                self.drawGetReady()
+
         elif self.mode == 'title':
             self.drawTunnel()
             self.drawScoreboard()
@@ -390,7 +399,7 @@ class Game():
         self.font_huge.centerText(self.output, 'TOOLBOX', y=2, fgcolor=brightness(title_color))
         self.font_huge.centerText(self.output, 'HEXAGON', y=3, fgcolor=brightness(title_color))
 
-        if self.tick % 24 < 16:
+        if self.tick % 32 < 16:
             self.font.centerText(self.output, 'PRESS BUTTON', y=SCR_H//8 * 0.75, fgcolor=brightness(COLORS['white']))
 
 
@@ -436,6 +445,11 @@ class Game():
     def drawGameover(self):
         if EventTimer.getTicks('gameover') > 30:
             self.font_huge.centerText(self.output, 'GAME OVER', y=(SCR_H/self.font_huge.font_h)/2, fgcolor=brightness(COLORS['white']))
+
+
+    def drawGetReady(self):
+        if self.tick % 32 < 16:
+            self.font.centerText(self.output, 'GET READY', y=(SCR_H/self.font.font_h)/3, fgcolor=brightness(COLORS['white']))
 
 
     def collisionCheck(self):
@@ -609,6 +623,8 @@ class Game():
         self.collisionInfo = False
 
         self.setMode('game')
+
+        EventTimer.set('getready', 32*6)
 
 
     def start(self):
