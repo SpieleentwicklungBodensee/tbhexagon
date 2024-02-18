@@ -52,9 +52,9 @@ def colorize(surface, color):
 PRINTLOG = []
 
 __oldprint = print
-def __newprint(msg):
-    PRINTLOG.append(msg)
-    __oldprint(msg)
+def __newprint(*msgs):
+    PRINTLOG.append(' '.join(str(msg) for msg in msgs))
+    __oldprint(*msgs)
 print = __newprint
 
 def cls():
