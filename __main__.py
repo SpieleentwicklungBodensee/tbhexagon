@@ -341,7 +341,7 @@ class Game():
         if RENDER_MODE != 'led':
             print('\nf11 toggle fullscreen')
 
-        if not self.joy:
+        if self.joy:
             print('\n\n\npress button/space to continue')
         else:
             print('\n\n\npress space to continue')
