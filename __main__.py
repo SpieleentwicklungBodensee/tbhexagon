@@ -329,8 +329,18 @@ class Game():
                 self.joy.init()
                 print(' - ' + self.joy.get_name())
 
-        print('\ninit complete')
-        print('press button or key')
+        print('\ninit ok')
+
+        # show help
+        print('\n\n\nkeyboard commands:')
+        print('------------------')
+        print('f1  less brightness')
+        print('f2  more brightness')
+
+        if RENDER_MODE != 'led':
+            print('\nf11 toggle fullscreen')
+
+        print('\n\n\npress button or space')
 
     def render(self):
         self.output.fill((0, 0, 0))
@@ -510,10 +520,11 @@ class Game():
                 elif e.key == pygame.K_F2:
                     brightnessValue = min(brightnessValue + 1, 0)
 
-                if self.mode == 'boot':
-                    self.setMode('title')
-                elif self.mode == 'title':
-                    self.newGame()
+                if e.key == pygame.K_SPACE:
+                    if self.mode == 'boot':
+                        self.setMode('title')
+                    elif self.mode == 'title':
+                        self.newGame()
 
             elif e.type == pygame.KEYUP:
                 if e.key == pygame.K_LEFT or e.key == pygame.K_a:
