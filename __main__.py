@@ -192,10 +192,10 @@ class Camera():
     def __init__(self,):
         self.xpos = 0
         self.ypos = 0
-    def update(self, player):
+    def update(self, player, speed=0.1):
         if FIRST_PERSON:
-            self.xpos = self.xpos*0.9 + player.xpos*0.1
-            self.ypos = self.ypos*0.9 + player.ypos*0.1
+            self.xpos = self.xpos*(1-speed) + player.xpos*speed
+            self.ypos = self.ypos*(1-speed) + player.ypos*speed
 
 
 class EventTimer():
@@ -603,7 +603,7 @@ class Game():
             if wall.pos[2]>0: new_walls.append(wall)
         self.walls = new_walls
 
-        self.camera.update(self.player)
+        self.camera.update(self.player, speed=0.02 if self.mode == 'title' else 0.1)
 
         if not self.gameover:
             self.player.update(self.camera)
