@@ -1,0 +1,1 @@
+SDL_VIDEO_WINDOW_POS=1920,0 python3 .
