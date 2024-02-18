@@ -322,6 +322,7 @@ class Game():
         pygame.joystick.init()
         if not pygame.joystick.get_count():
             print('no joystick detected')
+            self.joy = None
         else:
             print('found joysticks:')
             for i in range(pygame.joystick.get_count()):
@@ -340,7 +341,10 @@ class Game():
         if RENDER_MODE != 'led':
             print('\nf11 toggle fullscreen')
 
-        print('\n\n\npress button or space')
+        if not self.joy:
+            print('\n\n\npress button/space to continue')
+        else:
+            print('\n\n\npress space to continue')
 
     def render(self):
         self.output.fill((0, 0, 0))
@@ -410,7 +414,12 @@ class Game():
         self.font_huge.centerText(self.output, 'HEXAGON', y=3, fgcolor=brightness(title_color))
 
         if self.tick % 32 < 16:
-            self.font.centerText(self.output, 'PRESS BUTTON', y=SCR_H//8 * 0.75, fgcolor=brightness(COLORS['white']))
+            if self.joy:
+                presstext = 'PRESS BUTTON'
+            else:
+                presstext = 'PRESS SPACE'
+
+            self.font.centerText(self.output, presstext, y=SCR_H//8 * 0.75, fgcolor=brightness(COLORS['white']))
 
 
     def drawScoreboard(self):
