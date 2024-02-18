@@ -198,6 +198,34 @@ class Camera():
             self.ypos = self.ypos*0.9 + player.ypos*0.1
 
 
+class EventTimer():
+    events = {}
+
+    def set(name, ticks):
+        EventTimer.events[name] = (ticks, 0)
+
+    def tick():
+        for name, e in EventTimer.events.items():
+            EventTimer.events[name] = (e[0], e[1] + 1)
+
+    def isDue(name, delete=True):
+        if not name in EventTimer.events:
+            return False
+        
+        when, current = EventTimer.events[name]
+        
+        if current >= when:
+            if delete:
+                del EventTimer.events[name]
+
+            return True
+        
+        return False
+    
+    def getTicks(name):
+        return EventTimer.events[name][1]
+
+
 class Game():
     def __init__(self):
         print('')
@@ -283,8 +311,6 @@ class Game():
         self.mode = DEFAULT_MODE
 
         self.gameover = False
-        self.gameover_cnt = 0
-
 
         print('init joysticks...')
         pygame.joystick.init()
@@ -408,7 +434,7 @@ class Game():
 
 
     def drawGameover(self):
-        if self.gameover_cnt > 30:
+        if EventTimer.getTicks('gameover') > 30:
             self.font_huge.centerText(self.output, 'GAME OVER', y=(SCR_H/self.font_huge.font_h)/2, fgcolor=brightness(COLORS['white']))
 
 
@@ -425,6 +451,7 @@ class Game():
                                              self.player_drawy - wall.collisionSprite_ypos)) is not None:
                     self.collisionInfo = (wall.collisionSprite, wall.collisionSprite_xpos, wall.collisionSprite_ypos)
                     self.gameover = True
+                    EventTimer.set('gameover', 200)
                     self.particles.player_death(self.player)
                     return
 
@@ -549,9 +576,7 @@ class Game():
             self.collisionCheck()
 
         if self.gameover:
-            self.gameover_cnt += 1
-
-            if self.gameover_cnt == 200:
+            if EventTimer.isDue('gameover'):
                 self.backToTitle()
 
 
@@ -580,7 +605,6 @@ class Game():
         self.player.ypos = 0
 
         self.gameover = False
-        self.gameover_cnt = 0
 
         self.collisionInfo = False
 
@@ -598,6 +622,7 @@ class Game():
             self.update()
 
             self.tick += 1
+            EventTimer.tick()
 
             clock.tick(60)
 
