@@ -1,4 +1,5 @@
 import pygame
+import pygame._sdl2.controller
 import time
 import random
 import math
@@ -23,6 +24,9 @@ if not 'RENDER_MODE' in dir():
 
 if not 'JOY_DEADZONE' in dir():
     JOY_DEADZONE = 0.2
+
+if not 'FORCE_JOYSTICK_API' in dir():
+    FORCE_JOYSTICK_API = False
 
 if not 'DEFAULT_MODE' in dir():
     # 'boot', 'title', 'game'
@@ -91,7 +95,7 @@ class Wall:
         xy_mul=0.01
         if not FIRST_PERSON: xy_mul=0
 
-        if self.pos[2]>4: 
+        if self.pos[2]>4:
             img=pygame.transform.scale(LOGO_FILLED,(size,size))
             #img.set_alpha(128)
             img=pygame.transform.rotate(img,self.rot)
@@ -211,23 +215,23 @@ class EventTimer():
     def isDue(name, delete=True):
         if not name in EventTimer.events:
             return False
-        
+
         when, current = EventTimer.events[name]
-        
+
         if current >= when:
             if delete:
                 del EventTimer.events[name]
 
             return True
-        
+
         return False
-    
+
     def isPending(name):
         if not name in EventTimer.events:
             return False
-        
+
         return not EventTimer.isDue(name, False)
-    
+
     def getTicks(name):
         return EventTimer.events[name][1]
 
@@ -318,17 +322,31 @@ class Game():
 
         self.gameover = False
 
-        print('init joysticks...')
-        pygame.joystick.init()
-        if not pygame.joystick.get_count():
-            print('no joystick detected')
-            self.joy = None
-        else:
-            print('found joysticks:')
-            for i in range(pygame.joystick.get_count()):
-                self.joy = pygame.joystick.Joystick(i)
-                self.joy.init()
-                print(' - ' + self.joy.get_name())
+        print('init game controllers...')
+        pygame._sdl2.controller.init()
+        self.joymode = None
+
+        if not FORCE_JOYSTICK_API:
+            if not pygame._sdl2.controller.get_count():
+                print('no controllers detected')
+            else:
+                self.joymode = 'controller'
+                print('found controllers:')
+                for i in range(pygame._sdl2.controller.get_count()):
+                    joy = pygame._sdl2.controller.Controller(i)
+                    print(' - ' + joy.as_joystick().get_name())
+
+        if not self.joymode:    # use joystick lib as fallback
+            pygame.joystick.init()
+            if not pygame.joystick.get_count():
+                print('no joystick detected')
+            else:
+                self.joymode = 'joystick'
+                print('found joysticks:')
+                for i in range(pygame.joystick.get_count()):
+                    joy = pygame.joystick.Joystick(i)
+                    joy.init()
+                    print(' - ' + joy.get_name())
 
         print('\ninit ok')
 
@@ -341,7 +359,7 @@ class Game():
         if RENDER_MODE != 'led':
             print('\nf11 toggle fullscreen')
 
-        if self.joy:
+        if self.joymode is not None:
             print('\n\n\npress button/space to continue')
         else:
             print('\n\n\npress space to continue')
@@ -414,7 +432,7 @@ class Game():
         self.font_huge.centerText(self.output, 'HEXAGON', y=3, fgcolor=brightness(title_color))
 
         if self.tick % 32 < 16:
-            if self.joy:
+            if self.joymode is not None:
                 presstext = 'PRESS BUTTON'
             else:
                 presstext = 'PRESS SPACE'
@@ -549,13 +567,50 @@ class Game():
                     if self.player.ydir > 0:
                         self.player.ydir = 0
 
-            elif e.type == pygame.JOYAXISMOTION:
+            elif e.type == pygame.CONTROLLERAXISMOTION and self.joymode == 'controller':
+                value = max(-1, e.value / 32767)
+                if e.axis == pygame.CONTROLLER_AXIS_LEFTX:
+                    self.player.xdir = value if abs(value) > JOY_DEADZONE else 0
+                elif e.axis == pygame.CONTROLLER_AXIS_LEFTY:
+                    self.player.ydir = value if abs(value) > JOY_DEADZONE else 0
+
+            elif e.type == pygame.CONTROLLERBUTTONDOWN and self.joymode == 'controller':
+                if e.button in (pygame.CONTROLLER_BUTTON_A, pygame.CONTROLLER_BUTTON_B, pygame.CONTROLLER_BUTTON_X, pygame.CONTROLLER_BUTTON_Y):
+                    if self.mode == 'boot':
+                        self.setMode('title')
+                    elif self.mode == 'title':
+                        self.newGame()
+
+                elif e.button == pygame.CONTROLLER_BUTTON_DPAD_LEFT:
+                    self.player.xdir = -1
+                elif e.button == pygame.CONTROLLER_BUTTON_DPAD_RIGHT:
+                    self.player.xdir = 1
+                elif e.button == pygame.CONTROLLER_BUTTON_DPAD_UP:
+                    self.player.ydir = -1
+                elif e.button == pygame.CONTROLLER_BUTTON_DPAD_DOWN:
+                    self.player.ydir = 1
+
+            elif e.type == pygame.CONTROLLERBUTTONUP and self.joymode == 'controller':
+                if e.button == pygame.CONTROLLER_BUTTON_DPAD_LEFT:
+                    if self.player.xdir < 0:
+                        self.player.xdir = 0
+                elif e.button == pygame.CONTROLLER_BUTTON_DPAD_RIGHT:
+                    if self.player.xdir > 0:
+                        self.player.xdir = 0
+                elif e.button == pygame.CONTROLLER_BUTTON_DPAD_UP:
+                    if self.player.ydir < 0:
+                        self.player.ydir = 0
+                elif e.button == pygame.CONTROLLER_BUTTON_DPAD_DOWN:
+                    if self.player.ydir > 0:
+                        self.player.ydir = 0
+
+            elif e.type == pygame.JOYAXISMOTION and self.joymode == 'joystick':
                 if e.axis == 0:
                     self.player.xdir = e.value if abs(e.value) > JOY_DEADZONE else 0
                 elif e.axis == 1:
                     self.player.ydir = e.value if abs(e.value) > JOY_DEADZONE else 0
 
-            elif e.type == pygame.JOYBUTTONDOWN:
+            elif e.type == pygame.JOYBUTTONDOWN and self.joymode == 'joystick':
                 if self.mode == 'boot':
                     self.setMode('title')
                 elif self.mode == 'title':
