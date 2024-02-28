@@ -88,6 +88,10 @@ class Wall:
 
     def render(self,surface,x,y):
         if self.pos[2]<=0: return
+
+        x+=self.pos[0]
+        y+=self.pos[1]
+
         size=2560/self.pos[2]
         color=(max(min(int( self.color[0]/255 * min(0.1*size*size,255) ),255),0),
                max(min(int( self.color[1]/255 * min(0.1*size*size,255) ),255),0),
@@ -636,25 +640,62 @@ class Game():
         for wall in self.walls:
             wall.update()
 
-        wall_style=int(self.tick/60/3)%3
+        # generate new walls
+        wall_style   =int(self.tick/60/3)%4
+        level_repeats=int(self.tick/60/3 /4)
+        level_intensity=level_repeats/6
+        if self.mode!='game': level_intensity=0
+
+        #print(level_intensity)
+
+        sway_amp_per_second=1
+        sway_amp_max=100
+        # |
+        # V
+        t=self.tick/180
+        a=sway_amp_per_second*self.tick/60
+        if a>sway_amp_max: a=sway_amp_max
+        if a<0 or self.mode!='game': a=0
+        wall_pos=(math.sin(t)*a,math.cos(t)*a,200)
+
         if(wall_style==0):
             if self.tick%60==0:
                 wall=Wall()
+                wall.color=(wall.color[0]-255*level_intensity,wall.color[1]-255*level_intensity,wall.color[2]-255*level_intensity)
+                wall.pos=wall_pos
                 self.walls.append(wall)
-        if(wall_style==1):
+        elif(wall_style==1):
             if self.tick%60==0:
                 wall=Wall()
-                wall.rot_vel=0.2
+                wall.rot=-self.tick*2*level_intensity
+                wall.rot_vel=0.2+2*level_intensity
+                wall.pos=wall_pos
                 self.walls.append(wall)
-        if(wall_style==2):
+        elif(wall_style==2):
             if self.tick%15==0:
                 wall=Wall()
-                wall.rot=0.1*self.tick
-                wall.rot_vel-=1.2
+                wall.rot=self.tick*2*level_intensity
+                wall.rot_vel=-1.2*level_intensity
                 color_min=30
                 wall.color=(random.randrange(color_min,255),random.randrange(color_min,255),random.randrange(color_min,255))
+                wall.pos=wall_pos
+                self.walls.append(wall)
+        elif(wall_style==3):
+            if self.tick%60==30:
+                wall=Wall()
+                wall.color=(0,128,255)
+                wall.pos=wall_pos
+                wall.score/=2
                 self.walls.append(wall)
 
+                wall=Wall()
+                wall.color=(0,128,255)
+                if level_intensity>0.5: wall.rot_vel=(level_intensity-0.5)*2
+                wall.pos=wall_pos
+                wall.score/=2
+                self.walls.append(wall)
+
+        # delete passed walls
         new_walls = []
         for wall in self.walls:
             if wall.pos[2]>0: new_walls.append(wall)
