@@ -517,6 +517,16 @@ class Game():
                     #self.collisionInfo = (wall.inverseSprite, wall.inverseSprite_xpos, wall.inverseSprite_ypos)
                     self.score += wall.score
                     wall.score = 0
+                    return
+
+                self.score -= wall.score
+                wall.score = 0
+                if self.score <0:
+                    self.score = 0
+                    self.gameover = True
+                    EventTimer.set('gameover', 200)
+                    self.particles.player_death(self.player)
+                return
 
 
     def controls(self):
