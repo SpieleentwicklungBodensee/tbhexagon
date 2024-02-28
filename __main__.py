@@ -521,7 +521,9 @@ class Game():
         modstate = pygame.key.get_mods()
 
         for e in events:
-            if e.type == pygame.KEYDOWN:
+            if e.type==pygame.QUIT:
+                self.running = False
+            elif e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_ESCAPE:
                     self.running = False
 
