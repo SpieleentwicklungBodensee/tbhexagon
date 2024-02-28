@@ -1,10 +1,6 @@
 import pygame
 import random
 
-#from particles import Particles
-#self.particles = Particles()
-#self.particles.update_and_render(self.output,self.player)
-
 PARTICLE_STYLE_SPARK=0
 PARTICLE_STYLE_FLASH=1
 
@@ -41,12 +37,7 @@ class Particles:
                 #s=4
                 s=p.ttl/16
                 pygame.draw.rect(surface,rnd_color,(int(p.x+xx-s),int(p.y+yy-s),s+s,s+s))
-
         self.particles=particles_remaining
-    def player_collision(self,player):
-        for i in range(8):
-            p=Particle(player.xpos,player.ypos,PARTICLE_STYLE_SPARK)
-            self.particles.append(p)
     def player_death(self,player):
         for i in range(16):
             p=Particle(player.xpos,player.ypos,PARTICLE_STYLE_SPARK)
