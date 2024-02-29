@@ -3,6 +3,7 @@ import pygame._sdl2.controller
 import time
 import random
 import math
+import colorsys
 
 from bitmapfont import BitmapFont
 from particles import Particles
@@ -55,8 +56,8 @@ def expo(x, e):
     if e == 0.0:
         return x
     if e > 0.0:
-        return ((1.0 + e)**x - 1.0) / e
-    return math.log(1.0 - x * e) / math.log(1.0 - e)
+        return math.copysign(((1.0 + e)**abs(x) - 1.0) / e, x)
+    return math.copysign(math.log(1.0 - abs(x) * e) / math.log(1.0 - e), x)
 
 # custom print functions
 
@@ -609,9 +610,9 @@ class Game():
             elif e.type == pygame.CONTROLLERAXISMOTION and self.joymode == 'controller':
                 value = max(-1, e.value / 32767)
                 if e.axis == pygame.CONTROLLER_AXIS_LEFTX:
-                    self.player.xdir = expo(value, 1)*1.5 if abs(value) > JOY_DEADZONE else 0
+                    self.player.xdir = expo(value, 1.0)*1.5 if abs(value) > JOY_DEADZONE else 0
                 elif e.axis == pygame.CONTROLLER_AXIS_LEFTY:
-                    self.player.ydir = expo(value, 1)*1.5 if abs(value) > JOY_DEADZONE else 0
+                    self.player.ydir = expo(value, 1.0)*1.5 if abs(value) > JOY_DEADZONE else 0
 
             elif e.type == pygame.CONTROLLERBUTTONDOWN and self.joymode == 'controller':
                 if e.button in (pygame.CONTROLLER_BUTTON_A, pygame.CONTROLLER_BUTTON_B, pygame.CONTROLLER_BUTTON_X, pygame.CONTROLLER_BUTTON_Y):
@@ -714,7 +715,9 @@ class Game():
                 wall.rot=self.tick*2*level_intensity
                 wall.rot_vel=-1.2*level_intensity
                 color_min=30
-                wall.color=(random.randrange(color_min,255),random.randrange(color_min,255),random.randrange(color_min,255))
+                #wall.color=(random.randrange(color_min,255),random.randrange(color_min,255),random.randrange(color_min,255))
+                wall.color=colorsys.hsv_to_rgb((self.tick%100)/100,1,1)
+                wall.color=(int(wall.color[0]*255),int(wall.color[1]*255),int(wall.color[2]*255))
                 wall.pos=wall_pos
                 wall.style=wall_style
                 self.walls.append(wall)
