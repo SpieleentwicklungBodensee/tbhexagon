@@ -695,14 +695,12 @@ class Game():
                 wall=Wall()
                 wall.color=(0,128,255)
                 wall.pos=wall_pos
-                wall.score/=2
                 self.walls.append(wall)
 
                 wall=Wall()
                 wall.color=(0,128,255)
                 if level_intensity>0.5: wall.rot_vel=(level_intensity-0.5)*2
                 wall.pos=wall_pos
-                wall.score/=2
                 self.walls.append(wall)
 
         # delete passed walls
