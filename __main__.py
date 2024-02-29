@@ -51,6 +51,13 @@ def colorize(surface, color):
     s.fill(color, special_flags=pygame.BLEND_MULT)
     return s
 
+def expo(x, e):
+    if e == 0.0:
+        return x
+    if e > 0.0:
+        return ((1.0 + e)**x - 1.0) / e
+    return math.log(1.0 - x * e) / math.log(1.0 - e)
+
 # custom print functions
 
 PRINTLOG = []
@@ -602,9 +609,9 @@ class Game():
             elif e.type == pygame.CONTROLLERAXISMOTION and self.joymode == 'controller':
                 value = max(-1, e.value / 32767)
                 if e.axis == pygame.CONTROLLER_AXIS_LEFTX:
-                    self.player.xdir = value if abs(value) > JOY_DEADZONE else 0
+                    self.player.xdir = expo(value, 0) if abs(value) > JOY_DEADZONE else 0
                 elif e.axis == pygame.CONTROLLER_AXIS_LEFTY:
-                    self.player.ydir = value if abs(value) > JOY_DEADZONE else 0
+                    self.player.ydir = expo(value, 0) if abs(value) > JOY_DEADZONE else 0
 
             elif e.type == pygame.CONTROLLERBUTTONDOWN and self.joymode == 'controller':
                 if e.button in (pygame.CONTROLLER_BUTTON_A, pygame.CONTROLLER_BUTTON_B, pygame.CONTROLLER_BUTTON_X, pygame.CONTROLLER_BUTTON_Y):
@@ -672,8 +679,6 @@ class Game():
         level_intensity=level_repeats/6
         if self.mode!='game': level_intensity=0
 
-        #print(level_intensity)
-
         sway_amp_per_second=1
         sway_amp_max=100
         # |
@@ -685,10 +690,14 @@ class Game():
         wall_pos=(math.sin(t)*a,math.cos(t)*a,200)
 
         if(wall_style==0):
-            if self.tick%60==0:
+            if level_intensity>=2 or self.tick%(int(60-30*level_intensity))==0:
                 wall=Wall()
-                wall.color=(wall.color[0]-255*level_intensity,wall.color[1]-255*level_intensity,wall.color[2]-255*level_intensity)
-                wall.pos=wall_pos
+                #wall.color=(wall.color[0]-255*level_intensity,wall.color[1]-255*level_intensity,wall.color[2]-255*level_intensity)
+                sub_sway_t=self.tick%(60*3)/(60*3) # normalized
+                sub_sway_a=40*math.sin(sub_sway_t*math.pi)*level_intensity
+                sub_sway_x=math.sin(sub_sway_t*5)*sub_sway_a
+                sub_sway_y=math.cos(sub_sway_t*5)*sub_sway_a
+                wall.pos=(wall_pos[0]+sub_sway_x,wall_pos[1]+sub_sway_y,wall_pos[2])
                 wall.style=wall_style
                 self.walls.append(wall)
         elif(wall_style==1):
@@ -719,8 +728,9 @@ class Game():
 
                 wall=Wall()
                 wall.color=(0,128,255)
-                if level_intensity>0.5: wall.rot_vel=(level_intensity-0.5)*2
+                wall.rot_vel=level_intensity*0.25
                 wall.pos=wall_pos
+                wall.style=wall_style
                 self.walls.append(wall)
 
         # delete passed walls
