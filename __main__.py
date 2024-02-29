@@ -80,7 +80,7 @@ def cls():
 # vector draw/render functions
 
 FIRST_PERSON = not False
-LOGO_FILLED = pygame.image.load('gfx/tb-logo-white.png')
+LOGO_FILLED = pygame.image.load('gfx/tb-logo-black.png')
 LOGO_INVERSE = pygame.image.load('gfx/tb-logo-inverse.png')
 
 class Wall:
@@ -117,7 +117,8 @@ class Wall:
             img=pygame.transform.rotate(img,self.rot)
             img_x=(SCR_W-img.get_width() )/2-x*xy_mul*size
             img_y=(SCR_H-img.get_height())/2-y*xy_mul*size
-            surface.blit(colorize(img, (0, 0, 0)),(img_x,img_y))
+            #surface.blit(colorize(img, (0, 0, 0)),(img_x,img_y))
+            surface.blit (         img            ,(img_x,img_y))
 
         if self.pos[2]<8 and self.pos[2]>4:
             self.collisionSprite = img
