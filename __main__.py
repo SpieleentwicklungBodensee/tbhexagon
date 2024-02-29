@@ -181,6 +181,7 @@ DISTANCE = 64
 SPEED = 1.0 / 128
 
 pygame.display.init()
+pygame.mixer.init()
 
 
 class Player():
@@ -299,11 +300,18 @@ class Game():
         self.logo_filled = pygame.image.load('gfx/tb-logo-pure-2.png')
         self.logo_inverse = pygame.image.load('gfx/tb-logo-inverse.png')
 
+        self.copter_sprites = (pygame.image.load('gfx/copter1.png'), pygame.image.load('gfx/copter2.png'))
+
+        print('loading sound fx...')
+
+        self.sound_passthrough1 = pygame.mixer.Sound('sfx/passthrough1.wav')
+        self.sound_passthrough2 = pygame.mixer.Sound('sfx/passthrough2.wav')
+        self.sound_gameover = pygame.mixer.Sound('sfx/verrecksound.wav')
+
+
         self.collisionInfo = None
 
         self.walls = []
-
-        self.copter_sprites = (pygame.image.load('gfx/copter1.png'), pygame.image.load('gfx/copter2.png'))
 
         self.tick = 0
 
@@ -508,6 +516,7 @@ class Game():
                     self.gameover = True
                     EventTimer.set('gameover', 200)
                     self.particles.player_death(self.player)
+                    self.sound_gameover.play()
                     return
 
                 mask = pygame.mask.from_surface(wall.inverseSprite)
@@ -515,9 +524,16 @@ class Game():
                 if mask.overlap(playermask, (self.player_drawx - wall.inverseSprite_xpos,
                                              self.player_drawy - wall.inverseSprite_ypos)) is not None:
                     #self.collisionInfo = (wall.inverseSprite, wall.inverseSprite_xpos, wall.inverseSprite_ypos)
-                    self.score += wall.score
-                    wall.score = 0
-                    return
+
+                    if wall.score != 0:
+                        self.score += wall.score
+                        wall.score = 0
+
+                        if wall.style != 2:
+                            self.sound_passthrough1.play()
+                        else:
+                            self.sound_passthrough2.play()
+                        return
 
                 self.score -= wall.score
                 wall.score = 0
@@ -673,6 +689,7 @@ class Game():
                 wall=Wall()
                 wall.color=(wall.color[0]-255*level_intensity,wall.color[1]-255*level_intensity,wall.color[2]-255*level_intensity)
                 wall.pos=wall_pos
+                wall.style=wall_style
                 self.walls.append(wall)
         elif(wall_style==1):
             if self.tick%60==0:
@@ -680,6 +697,7 @@ class Game():
                 wall.rot=-self.tick*2*level_intensity
                 wall.rot_vel=0.2+2*level_intensity
                 wall.pos=wall_pos
+                wall.style=wall_style
                 self.walls.append(wall)
         elif(wall_style==2):
             if self.tick%15==0:
@@ -689,12 +707,14 @@ class Game():
                 color_min=30
                 wall.color=(random.randrange(color_min,255),random.randrange(color_min,255),random.randrange(color_min,255))
                 wall.pos=wall_pos
+                wall.style=wall_style
                 self.walls.append(wall)
         elif(wall_style==3):
             if self.tick%60==30:
                 wall=Wall()
                 wall.color=(0,128,255)
                 wall.pos=wall_pos
+                wall.style=wall_style
                 self.walls.append(wall)
 
                 wall=Wall()
