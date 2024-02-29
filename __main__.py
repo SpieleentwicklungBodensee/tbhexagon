@@ -56,8 +56,12 @@ def expo(x, e):
     if e == 0.0:
         return x
     if e > 0.0:
-        return math.copysign(((1.0 + e)**abs(x) - 1.0) / e, x)
-    return math.copysign(math.log(1.0 - abs(x) * e) / math.log(1.0 - e), x)
+        return ((1.0 + e)**x - 1.0) / e
+    return math.log(1.0 - x * e) / math.log(1.0 - e)
+
+def controlCurve(x):
+    v = max(0.0, min((abs(x) - JOY_DEADZONE) / (1.0 - JOY_DEADZONE), 1.0))
+    return math.copysign(expo(v, 0.75)*1.5, x)
 
 # custom print functions
 
@@ -610,9 +614,9 @@ class Game():
             elif e.type == pygame.CONTROLLERAXISMOTION and self.joymode == 'controller':
                 value = max(-1, e.value / 32767)
                 if e.axis == pygame.CONTROLLER_AXIS_LEFTX:
-                    self.player.xdir = expo(value, 1.0)*1.5 if abs(value) > JOY_DEADZONE else 0
+                    self.player.xdir = controlCurve(value)
                 elif e.axis == pygame.CONTROLLER_AXIS_LEFTY:
-                    self.player.ydir = expo(value, 1.0)*1.5 if abs(value) > JOY_DEADZONE else 0
+                    self.player.ydir = controlCurve(value)
 
             elif e.type == pygame.CONTROLLERBUTTONDOWN and self.joymode == 'controller':
                 if e.button in (pygame.CONTROLLER_BUTTON_A, pygame.CONTROLLER_BUTTON_B, pygame.CONTROLLER_BUTTON_X, pygame.CONTROLLER_BUTTON_Y):
@@ -646,9 +650,9 @@ class Game():
 
             elif e.type == pygame.JOYAXISMOTION and self.joymode == 'joystick':
                 if e.axis == 0:
-                    self.player.xdir = e.value if abs(e.value) > JOY_DEADZONE else 0
+                    self.player.xdir = controlCurve(e.value)
                 elif e.axis == 1:
-                    self.player.ydir = e.value if abs(e.value) > JOY_DEADZONE else 0
+                    self.player.ydir = controlCurve(e.value)
 
             elif e.type == pygame.JOYBUTTONDOWN and self.joymode == 'joystick':
                 if self.mode == 'boot':
