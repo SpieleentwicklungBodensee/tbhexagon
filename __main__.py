@@ -32,7 +32,7 @@ if not 'DEFAULT_MODE' in dir():
     # 'boot', 'title', 'game'
     DEFAULT_MODE = 'boot'
 
-brightnessValue = 0
+brightnessValue = -4
 def gamma(v):
     return min(v * 2**(brightnessValue / 4), 255)
 
@@ -572,13 +572,13 @@ class Game():
                         pygame.display.toggle_fullscreen()
 
                 if e.key == pygame.K_LEFT or e.key == pygame.K_a:
-                    self.player.xdir = -1
+                    self.player.xdir = -1.5
                 elif e.key == pygame.K_RIGHT or e.key == pygame.K_d:
-                    self.player.xdir = 1
+                    self.player.xdir = 1.5
                 elif e.key == pygame.K_UP or e.key == pygame.K_w:
-                    self.player.ydir = -1
+                    self.player.ydir = -1.5
                 elif e.key == pygame.K_DOWN or e.key == pygame.K_s:
-                    self.player.ydir = 1
+                    self.player.ydir = 1.5
 
                 global brightnessValue
                 if e.key == pygame.K_F1:
@@ -609,9 +609,9 @@ class Game():
             elif e.type == pygame.CONTROLLERAXISMOTION and self.joymode == 'controller':
                 value = max(-1, e.value / 32767)
                 if e.axis == pygame.CONTROLLER_AXIS_LEFTX:
-                    self.player.xdir = expo(value, 0) if abs(value) > JOY_DEADZONE else 0
+                    self.player.xdir = expo(value, 1)*1.5 if abs(value) > JOY_DEADZONE else 0
                 elif e.axis == pygame.CONTROLLER_AXIS_LEFTY:
-                    self.player.ydir = expo(value, 0) if abs(value) > JOY_DEADZONE else 0
+                    self.player.ydir = expo(value, 1)*1.5 if abs(value) > JOY_DEADZONE else 0
 
             elif e.type == pygame.CONTROLLERBUTTONDOWN and self.joymode == 'controller':
                 if e.button in (pygame.CONTROLLER_BUTTON_A, pygame.CONTROLLER_BUTTON_B, pygame.CONTROLLER_BUTTON_X, pygame.CONTROLLER_BUTTON_Y):
@@ -621,13 +621,13 @@ class Game():
                         self.newGame()
 
                 elif e.button == pygame.CONTROLLER_BUTTON_DPAD_LEFT:
-                    self.player.xdir = -1
+                    self.player.xdir = -1.5
                 elif e.button == pygame.CONTROLLER_BUTTON_DPAD_RIGHT:
-                    self.player.xdir = 1
+                    self.player.xdir = 1.5
                 elif e.button == pygame.CONTROLLER_BUTTON_DPAD_UP:
-                    self.player.ydir = -1
+                    self.player.ydir = -1.5
                 elif e.button == pygame.CONTROLLER_BUTTON_DPAD_DOWN:
-                    self.player.ydir = 1
+                    self.player.ydir = 1.5
 
             elif e.type == pygame.CONTROLLERBUTTONUP and self.joymode == 'controller':
                 if e.button == pygame.CONTROLLER_BUTTON_DPAD_LEFT:
