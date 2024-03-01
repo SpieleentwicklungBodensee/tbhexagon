@@ -61,7 +61,7 @@ def expo(x, e):
 
 def controlCurve(x):
     v = max(0.0, min((abs(x) - JOY_DEADZONE) / (1.0 - JOY_DEADZONE), 1.0))
-    return math.copysign(expo(v, 0.75)*1.5, x)
+    return math.copysign(expo(v, 1.0) * 1.5, x)
 
 # custom print functions
 
