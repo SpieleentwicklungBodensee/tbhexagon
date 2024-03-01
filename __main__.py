@@ -685,7 +685,7 @@ class Game():
         level_intensity=level_repeats/6
         if self.mode!='game': level_intensity=0
 
-        level_intensity = expo(level_intensity, -1.5) * 0.75) # "was ist jetzt los?"
+        level_intensity = expo(level_intensity, -1.5) * 0.75 # "was ist jetzt los?"
 
         sway_amp_per_second=1
         sway_amp_max=100
