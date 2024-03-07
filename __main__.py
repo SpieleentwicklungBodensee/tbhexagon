@@ -315,13 +315,13 @@ class Game():
         elif RENDER_MODE == 'arcade':
             SCR_W = 320
             SCR_H = 256
-            self.window = pygame.display.set_mode((SCR_W, SCR_H), flags=pygame.SCALED)
+            self.window = pygame.display.set_mode((SCR_W, SCR_H), flags=pygame.SCALED|pygame.FULLSCREEN)
             self.output = self.window
 
         elif RENDER_MODE == 'square':
             SCR_W = 256
             SCR_H = 256
-            self.window = pygame.display.set_mode((SCR_W, SCR_H), flags=pygame.SCALED)
+            self.window = pygame.display.set_mode((SCR_W, SCR_H), flags=pygame.SCALED|pygame.FULLSCREEN)
             self.output = self.window
 
         self.running = False
