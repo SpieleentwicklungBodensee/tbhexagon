@@ -21,6 +21,8 @@ if not 'RENDER_MODE' in dir():
     # 'led' = for led wall output
     # 'plain' = for pc/laptop or testing
     # 'sim' = led simulation for uli
+    # 'arcade' = for toolbox arcade cabinet
+    # 'square' = for square displays
     RENDER_MODE = 'led'
 
 if not 'JOY_DEADZONE' in dir():
@@ -33,7 +35,13 @@ if not 'DEFAULT_MODE' in dir():
     # 'boot', 'title', 'game'
     DEFAULT_MODE = 'boot'
 
-brightnessValue = -4
+if not 'DEFAULT_BRIGHTNESS' in dir():
+    if RENDER_MODE == 'led':
+        DEFAULT_BRIGHTNESS = -4
+    else:
+        DEFAULT_BRIGHTNESS = 0
+
+brightnessValue = DEFAULT_BRIGHTNESS
 def gamma(v):
     return min(v * 2**(brightnessValue / 4), 255)
 
@@ -256,6 +264,9 @@ class EventTimer():
 
 class Game():
     def __init__(self):
+        global SCR_W
+        global SCR_H
+
         print('')
         print('welcome to toolbox hexagon\n')
 
@@ -300,6 +311,18 @@ class Game():
                         pygame.draw.line(self.overlay, (0, 0, 0, 255), (0, y+i), (WIN_W, y+i))
 
             #self.overlay = pygame.image.load('gfx/raster1792.png')
+
+        elif RENDER_MODE == 'arcade':
+            SCR_W = 320
+            SCR_H = 256
+            self.window = pygame.display.set_mode((SCR_W, SCR_H), flags=pygame.SCALED)
+            self.output = self.window
+
+        elif RENDER_MODE == 'square':
+            SCR_W = 256
+            SCR_H = 256
+            self.window = pygame.display.set_mode((SCR_W, SCR_H), flags=pygame.SCALED)
+            self.output = self.window
 
         self.running = False
 
