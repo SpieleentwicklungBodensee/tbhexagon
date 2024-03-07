@@ -203,6 +203,7 @@ SPEED = 1.0 / 128
 
 pygame.display.init()
 pygame.mixer.init()
+pygame.mouse.set_visible(False)
 
 
 class Player():
