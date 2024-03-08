@@ -7,6 +7,7 @@ import colorsys
 
 from bitmapfont import BitmapFont
 from particles import Particles
+import highscore
 
 
 # read settings from settings.py
@@ -20,7 +21,7 @@ except ImportError:
 if not 'RENDER_MODE' in dir():
     # 'led' = for led wall output
     # 'plain' = for pc/laptop or testing
-    # 'sim' = led simulation for uli
+    # 'sim' = led simulation for uli (deprecated)
     # 'arcade' = for toolbox arcade cabinet
     # 'square' = for square displays
     RENDER_MODE = 'led'
@@ -32,7 +33,7 @@ if not 'FORCE_JOYSTICK_API' in dir():
     FORCE_JOYSTICK_API = False
 
 if not 'DEFAULT_MODE' in dir():
-    # 'boot', 'title', 'game'
+    # 'boot', 'title', 'game', 'high'
     DEFAULT_MODE = 'boot'
 
 if not 'DEFAULT_BRIGHTNESS' in dir():
@@ -40,6 +41,10 @@ if not 'DEFAULT_BRIGHTNESS' in dir():
         DEFAULT_BRIGHTNESS = -4
     else:
         DEFAULT_BRIGHTNESS = 0
+
+if not 'HIGHSCORE_NAME_ENTRY_ENABLED' in dir():
+    HIGHSCORE_NAME_ENTRY_ENABLED = True
+
 
 brightnessValue = DEFAULT_BRIGHTNESS
 def gamma(v):
@@ -363,6 +368,10 @@ class Game():
         self.score = 0
         self.highscore = 0
 
+        self.debounce_x = 0
+        self.debounce_y = 0
+        self.debounce_tick = 0
+
         self.mode = DEFAULT_MODE
 
         self.gameover = False
@@ -430,6 +439,10 @@ class Game():
             self.drawScoreboard()
             self.drawTitle()
 
+        elif self.mode == 'high':
+            self.drawTunnel()
+            self.drawNameEnty()
+
         self.particles.update_and_render(self.output,self.player,SCR_W,SCR_H)
 
         self.drawPrintlog()
@@ -490,10 +503,9 @@ class Game():
 
 
     def drawScoreboard(self):
-        #y = SCR_H/8 -2
         y = 0
 
-        self.font.drawText(self.output, 'HI', x=1, y=y, fgcolor=brightness(COLORS['white']))
+        self.font.drawText(self.output, highscore.name, x=1, y=y, fgcolor=brightness(COLORS['white']))
         self.font.drawText(self.output, '%05i' % self.highscore, x=1, y=y+1, fgcolor=brightness(COLORS['white']))
         self.font.drawText(self.output, '1UP', x=SCR_W/8-4, y=y, fgcolor=brightness(COLORS['white']))
         self.font.drawText(self.output, '%05i' % self.score, x=SCR_W/8-6, y=y+1, fgcolor=brightness(COLORS['white']))
@@ -538,6 +550,20 @@ class Game():
             self.font.centerText(self.output, 'GET READY', y=(SCR_H/self.font.font_h)/3, fgcolor=brightness(COLORS['white']))
 
 
+    def drawNameEnty(self):
+        self.font_big.centerText(self.output, '%05i' % self.score, y=SCR_H/self.font_big.font_h/2-2, fgcolor=brightness(COLORS['white']))
+        self.font.centerText(self.output, 'NEW HIGHSCORE!', y=SCR_H/self.font.font_h/2, fgcolor=brightness(COLORS['white']))
+        self.font.centerText(self.output, '')
+        self.font.centerText(self.output, 'ENTER YOUR NAME:', fgcolor=brightness(COLORS['white']))
+
+        self.font_big.centerText(self.output, highscore.name, y=SCR_H/self.font_big.font_h/2+2, fgcolor=brightness(COLORS['white']))
+
+        # draw cursor
+        if self.tick % 32 < 16:
+            curstr = (' ' * highscore.name_cursor) + '_' + ' ' * (highscore.MAX_LENGTH - highscore.name_cursor - 1)
+            self.font_big.centerText(self.output, curstr, y=SCR_H/self.font_big.font_h/2+2.3, fgcolor=brightness(COLORS['white']))
+
+
     def collisionCheck(self):
         playermask = pygame.mask.from_surface(self.copter_sprites[0])
 
@@ -551,7 +577,11 @@ class Game():
                                              self.player_drawy - wall.collisionSprite_ypos)) is not None:
                     self.collisionInfo = (wall.collisionSprite, wall.collisionSprite_xpos, wall.collisionSprite_ypos)
                     self.gameover = True
-                    EventTimer.set('gameover', 200)
+
+                    if self.score > self.highscore and HIGHSCORE_NAME_ENTRY_ENABLED:
+                        EventTimer.set('gameover', 100) # shorter wait time on highscore
+                    else:
+                        EventTimer.set('gameover', 200)
                     self.particles.player_death(self.player)
                     self.sound_gameover.play()
                     return
@@ -601,89 +631,156 @@ class Game():
                     if modstate & pygame.KMOD_ALT:
                         pygame.display.toggle_fullscreen()
 
-                if e.key == pygame.K_LEFT or e.key == pygame.K_a:
-                    self.player.xdir = -1.5
-                elif e.key == pygame.K_RIGHT or e.key == pygame.K_d:
-                    self.player.xdir = 1.5
-                elif e.key == pygame.K_UP or e.key == pygame.K_w:
-                    self.player.ydir = -1.5
-                elif e.key == pygame.K_DOWN or e.key == pygame.K_s:
-                    self.player.ydir = 1.5
-
                 global brightnessValue
                 if e.key == pygame.K_F1:
                     brightnessValue -= 1
                 elif e.key == pygame.K_F2:
                     brightnessValue = min(brightnessValue + 1, 0)
 
-                if e.key == pygame.K_SPACE:
-                    if self.mode == 'boot':
-                        self.setMode('title')
-                    elif self.mode == 'title':
-                        self.newGame()
+                if e.key == pygame.K_LEFT or e.key == pygame.K_a:
+                    self.on_left_pressed()
+                elif e.key == pygame.K_RIGHT or e.key == pygame.K_d:
+                    self.on_right_pressed()
+                elif e.key == pygame.K_UP or e.key == pygame.K_w:
+                    self.on_up_pressed()
+                elif e.key == pygame.K_DOWN or e.key == pygame.K_s:
+                    self.on_down_pressed()
+
+                if e.key == pygame.K_SPACE or e.key == pygame.K_RETURN:
+                    self.on_fire_pressed()
 
             elif e.type == pygame.KEYUP:
                 if e.key == pygame.K_LEFT or e.key == pygame.K_a:
-                    if self.player.xdir < 0:
-                        self.player.xdir = 0
+                    self.on_left_released()
                 elif e.key == pygame.K_RIGHT or e.key == pygame.K_d:
-                    if self.player.xdir > 0:
-                        self.player.xdir = 0
+                    self.on_right_released()
                 elif e.key == pygame.K_UP or e.key == pygame.K_w:
-                    if self.player.ydir < 0:
-                        self.player.ydir = 0
+                    self.on_up_released()
                 elif e.key == pygame.K_DOWN or e.key == pygame.K_s:
-                    if self.player.ydir > 0:
-                        self.player.ydir = 0
+                    self.on_down_released()
 
             elif e.type == pygame.CONTROLLERAXISMOTION and self.joymode == 'controller':
                 value = max(-1, e.value / 32767)
+
                 if e.axis == pygame.CONTROLLER_AXIS_LEFTX:
-                    self.player.xdir = controlCurve(value)
+                    self.on_axis_x(value)
                 elif e.axis == pygame.CONTROLLER_AXIS_LEFTY:
-                    self.player.ydir = controlCurve(value)
+                    self.on_axis_y(value)
 
             elif e.type == pygame.CONTROLLERBUTTONDOWN and self.joymode == 'controller':
                 if e.button in (pygame.CONTROLLER_BUTTON_A, pygame.CONTROLLER_BUTTON_B, pygame.CONTROLLER_BUTTON_X, pygame.CONTROLLER_BUTTON_Y):
-                    if self.mode == 'boot':
-                        self.setMode('title')
-                    elif self.mode == 'title':
-                        self.newGame()
+                    self.on_fire_pressed()
 
                 elif e.button == pygame.CONTROLLER_BUTTON_DPAD_LEFT:
-                    self.player.xdir = -1.5
+                    self.on_left_pressed()
                 elif e.button == pygame.CONTROLLER_BUTTON_DPAD_RIGHT:
-                    self.player.xdir = 1.5
+                    self.on_right_pressed()
                 elif e.button == pygame.CONTROLLER_BUTTON_DPAD_UP:
-                    self.player.ydir = -1.5
+                    self.on_up_pressed()
                 elif e.button == pygame.CONTROLLER_BUTTON_DPAD_DOWN:
-                    self.player.ydir = 1.5
+                    self.on_down_pressed()
 
             elif e.type == pygame.CONTROLLERBUTTONUP and self.joymode == 'controller':
                 if e.button == pygame.CONTROLLER_BUTTON_DPAD_LEFT:
-                    if self.player.xdir < 0:
-                        self.player.xdir = 0
+                    self.on_left_released()
                 elif e.button == pygame.CONTROLLER_BUTTON_DPAD_RIGHT:
-                    if self.player.xdir > 0:
-                        self.player.xdir = 0
+                    self.on_right_released()
                 elif e.button == pygame.CONTROLLER_BUTTON_DPAD_UP:
-                    if self.player.ydir < 0:
-                        self.player.ydir = 0
+                    self.on_up_released()
                 elif e.button == pygame.CONTROLLER_BUTTON_DPAD_DOWN:
-                    if self.player.ydir > 0:
-                        self.player.ydir = 0
+                    self.on_down_released()
 
             elif e.type == pygame.JOYAXISMOTION and self.joymode == 'joystick':
                 if e.axis == 0:
-                    self.player.xdir = controlCurve(e.value)
+                    self.on_axis_x(e.value)
                 elif e.axis == 1:
-                    self.player.ydir = controlCurve(e.value)
+                    self.on_axis_y(e.value)
 
             elif e.type == pygame.JOYBUTTONDOWN and self.joymode == 'joystick':
-                if self.mode == 'boot':
-                    self.setMode('title')
-                elif self.mode == 'title':
-                    self.newGame()
+                self.on_fire_pressed()
+
+    def on_fire_pressed(self):
+        if self.mode == 'boot':
+            self.setMode('title')
+        elif self.mode == 'title':
+            self.newGame()
+        elif self.mode == 'high':
+            if not highscore.step(1):
+                self.setMode('title')
+
+    def on_left_pressed(self):
+        if self.mode == 'game':
+            self.player.xdir = -1.5
+        elif self.mode == 'high':
+            highscore.step(-1)
+
+    def on_right_pressed(self):
+        if self.mode == 'game':
+            self.player.xdir = 1.5
+        elif self.mode == 'high':
+            highscore.step(1)
+
+    def on_up_pressed(self):
+        if self.mode == 'game':
+            self.player.ydir = -1.5
+        elif self.mode == 'high':
+            highscore.scroll(-1)
+
+    def on_down_pressed(self):
+        if self.mode == 'game':
+            self.player.ydir = 1.5
+        elif self.mode == 'high':
+            highscore.scroll(1)
+
+    def on_left_released(self):
+        if self.player.xdir < 0:
+            self.player.xdir = 0
+
+    def on_right_released(self):
+        if self.player.xdir > 0:
+            self.player.xdir = 0
+
+    def on_up_released(self):
+        if self.player.ydir < 0:
+            self.player.ydir = 0
+
+    def on_down_released(self):
+        if self.player.ydir > 0:
+            self.player.ydir = 0
+
+    def on_axis_x(self, value):
+        if self.mode == 'game':
+            self.player.xdir = controlCurve(value)
+
+        elif self.mode == 'high':
+            if value > 0.5:
+                if self.debounce_x == 0:
+                    highscore.step(1)
+                    self.debounce_x = 1
+            elif value < -0.5:
+                if self.debounce_x == 0:
+                    highscore.step(-1)
+                    self.debounce_x = -1
+            else:
+                self.debounce_x = 0
+
+    def on_axis_y(self, value):
+        if self.mode == 'game':
+            self.player.ydir = controlCurve(value)
+
+        elif self.mode == 'high':
+            if value > 0.5:
+                if self.debounce_y == 0:
+                    #highscore.scroll(-1)   # will be scrolled in update()
+                    self.debounce_y = 1
+                    self.debounce_tick = self.tick
+            elif value < -0.5:
+                if self.debounce_y == 0:
+                    #highscore.scroll(1)    # will be scrolled in update()
+                    self.debounce_y = -1
+                    self.debounce_tick = self.tick
+            else:
+                self.debounce_y = 0
 
 
     def update(self):
@@ -771,19 +868,32 @@ class Game():
                 self.backToTitle()
 
 
+        # auto scroll through letters in highscore name entry when analog input is used
+        if self.mode == 'high':
+            if self.debounce_y:
+                if (self.tick - self.debounce_tick) % 12 == 0:
+                    highscore.scroll(self.debounce_y * -1)
+
+
     def setMode(self, mode):
         self.mode = mode
         cls()
 
 
     def backToTitle(self):
-        self.setMode('title')
+        if self.score > self.highscore:
+            self.highscore = self.score
+
+            if HIGHSCORE_NAME_ENTRY_ENABLED:
+                self.setMode('high')
+                highscore.reset()
+            else:
+                self.setMode('title')
+        else:
+            self.setMode('title')
 
         self.player.xpos = 0
         self.player.ypos = 0
-
-        if self.score > self.highscore:
-            self.highscore = self.score
 
 
     def newGame(self):
