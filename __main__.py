@@ -505,7 +505,7 @@ class Game():
     def drawScoreboard(self):
         y = 0
 
-        self.font.drawText(self.output, highscore.name, x=1, y=y, fgcolor=brightness(COLORS['white']))
+        self.font.drawText(self.output, highscore.name or 'HI', x=1, y=y, fgcolor=brightness(COLORS['white']))
         self.font.drawText(self.output, '%05i' % self.highscore, x=1, y=y+1, fgcolor=brightness(COLORS['white']))
         self.font.drawText(self.output, '1UP', x=SCR_W/8-4, y=y, fgcolor=brightness(COLORS['white']))
         self.font.drawText(self.output, '%05i' % self.score, x=SCR_W/8-6, y=y+1, fgcolor=brightness(COLORS['white']))

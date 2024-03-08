@@ -5,7 +5,7 @@ CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ !'
 char_cursor = 0
 name_cursor = 0
 
-name = 'HI'   # default string
+name = None
 
 
 def scroll(amount):
@@ -32,7 +32,7 @@ def step(amount=1):
 def reset():
     global char_cursor, name_cursor, name
 
-    if name == 'HI' and MAX_LENGTH != 2:
+    if name is None:
         name = 'AAA'
 
     name_cursor = 0
