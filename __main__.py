@@ -859,7 +859,7 @@ class Game():
 
         self.camera.update(self.player, speed=0.02 if self.mode == 'title' else 0.1)
 
-        if not self.gameover:
+        if not self.gameover and self.mode != 'title':
             self.player.update(self.camera)
             self.collisionCheck()
 
