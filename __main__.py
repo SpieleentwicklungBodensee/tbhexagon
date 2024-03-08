@@ -352,10 +352,6 @@ class Game():
 
         self.tick = 0
 
-        self.logos = [(3, 40),
-                      (2, 20),
-                      (1, 0),]   # distance, rotation
-
         self.player = Player(0, 0)
         self.player_drawx = SCR_W/2 # for collision
         self.player_drawy = SCR_H/2 # for collision
@@ -442,13 +438,17 @@ class Game():
         # compose and zoom
         if RENDER_MODE == 'plain':
             pass
-        if RENDER_MODE == 'led':
+        elif RENDER_MODE == 'led':
             pygame.transform.scale(self.output, (SCR_W * 2, SCR_H), self.scaled)
             self.window.blit(self.scaled, (0, 0))
             self.window.blit(self.overlay, (0, 0))
         elif RENDER_MODE == 'sim':
             pygame.transform.scale(self.output, (WIN_W, WIN_H), self.window)
             self.window.blit(self.overlay, (0, 0))
+        elif RENDER_MODE == 'arcade':
+            pass
+        elif RENDER_MODE == 'square':
+            pass
 
         pygame.display.flip()
 
@@ -687,19 +687,6 @@ class Game():
 
 
     def update(self):
-        newlogos = []
-
-        for dist, rot in self.logos:
-            dist -= SPEED
-            if dist <= 0:
-                dist = 3
-                rot += 60
-                rot = int(random.random() * 36) * 10
-
-            newlogos.append((dist, rot))
-
-        self.logos = newlogos
-
         for wall in self.walls:
             wall.update()
 
