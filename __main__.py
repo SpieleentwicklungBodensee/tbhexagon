@@ -753,11 +753,11 @@ class Game():
             self.player.xdir = controlCurve(value)
 
         elif self.mode == 'high':
-            if value > 0.5:
+            if value > 0.75:
                 if self.debounce_x == 0:
                     highscore.step(1)
                     self.debounce_x = 1
-            elif value < -0.5:
+            elif value < -0.75:
                 if self.debounce_x == 0:
                     highscore.step(-1)
                     self.debounce_x = -1
@@ -769,12 +769,12 @@ class Game():
             self.player.ydir = controlCurve(value)
 
         elif self.mode == 'high':
-            if value > 0.5:
+            if value > 0.75:
                 if self.debounce_y == 0:
                     #highscore.scroll(-1)   # will be scrolled in update()
                     self.debounce_y = 1
                     self.debounce_tick = self.tick
-            elif value < -0.5:
+            elif value < -0.75:
                 if self.debounce_y == 0:
                     #highscore.scroll(1)    # will be scrolled in update()
                     self.debounce_y = -1
