@@ -45,6 +45,9 @@ if not 'DEFAULT_BRIGHTNESS' in dir():
 if not 'HIGHSCORE_NAME_ENTRY_ENABLED' in dir():
     HIGHSCORE_NAME_ENTRY_ENABLED = True
 
+if not 'HIGHSCORE_LIST_ENABLED' in dir():
+    HIGHSCORE_LIST_ENABLED = True
+
 
 brightnessValue = DEFAULT_BRIGHTNESS
 def gamma(v):
@@ -350,6 +353,12 @@ class Game():
         self.sound_passthrough2 = pygame.mixer.Sound('sfx/passthrough2.wav')
         self.sound_gameover = pygame.mixer.Sound('sfx/verrecksound.wav')
 
+        if HIGHSCORE_LIST_ENABLED:
+            print('loading highscores...')
+            try:
+                highscore.load()
+            except:
+                print(' - not found')
 
         self.collisionInfo = None
 
@@ -409,6 +418,8 @@ class Game():
         print('------------------')
         print('f1  less brightness')
         print('f2  more brightness')
+        print('')
+        print('f8  clear highscore')
 
         if RENDER_MODE != 'led':
             print('\nf11 toggle fullscreen')
@@ -438,6 +449,9 @@ class Game():
             self.drawTunnel()
             self.drawScoreboard()
             self.drawTitle()
+
+            if HIGHSCORE_LIST_ENABLED:
+                self.drawHallOfFame()
 
         elif self.mode == 'high':
             self.drawTunnel()
@@ -505,10 +519,35 @@ class Game():
     def drawScoreboard(self):
         y = 0
 
-        self.font.drawText(self.output, highscore.name or 'HI', x=1, y=y, fgcolor=brightness(COLORS['white']))
-        self.font.drawText(self.output, '%05i' % self.highscore, x=1, y=y+1, fgcolor=brightness(COLORS['white']))
+        if HIGHSCORE_LIST_ENABLED:
+            hs = highscore.highscorelist[0][0]
+            hn = highscore.highscorelist[0][1]
+        else:
+            hs = self.highscore
+            hn = highscore.name
+
+        self.font.drawText(self.output, hn or 'HI', x=1, y=y, fgcolor=brightness(COLORS['white']))
+        self.font.drawText(self.output, '%05i' % hs, x=1, y=y+1, fgcolor=brightness(COLORS['white']))
         self.font.drawText(self.output, '1UP', x=SCR_W/8-4, y=y, fgcolor=brightness(COLORS['white']))
         self.font.drawText(self.output, '%05i' % self.score, x=SCR_W/8-6, y=y+1, fgcolor=brightness(COLORS['white']))
+
+
+    def drawHallOfFame(self):
+        if (self.tick - self.tick_last_mode_change) % 800 < 300:
+            return
+
+        y = SCR_H/self.font.font_h/2-5
+
+        self.font.drawText(self.output, 'TOP SCORES', x=11, y=y)
+        self.font.drawText(self.output, '')
+        self.font.drawText(self.output, '')
+
+        for i, entry in enumerate(highscore.highscorelist[:5]):
+            score, name = entry
+
+            if (self.tick - self.tick_last_mode_change) % 800 - 300 > (i + 1) * 50:
+                self.font.drawText(self.output, '%05i  %s' % (score, name), x=11, fgcolor=brightness(COLORS['white']))
+                self.font.drawText(self.output, '')
 
 
     def drawPrintlog(self):
@@ -578,10 +617,13 @@ class Game():
                     self.collisionInfo = (wall.collisionSprite, wall.collisionSprite_xpos, wall.collisionSprite_ypos)
                     self.gameover = True
 
-                    if self.score > self.highscore and HIGHSCORE_NAME_ENTRY_ENABLED:
+                    if HIGHSCORE_LIST_ENABLED and highscore.check(self.score):
+                        EventTimer.set('gameover', 100) # shorter wait time on highscore
+                    elif HIGHSCORE_NAME_ENTRY_ENABLED and self.score > self.highscore:
                         EventTimer.set('gameover', 100) # shorter wait time on highscore
                     else:
                         EventTimer.set('gameover', 200)
+
                     self.particles.player_death(self.player)
                     self.sound_gameover.play()
                     return
@@ -623,6 +665,10 @@ class Game():
             elif e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_ESCAPE:
                     self.running = False
+
+                if e.key == pygame.K_F8:
+                    self.highscore = 0
+                    highscore.clear()
 
                 if e.key == pygame.K_F11:
                     pygame.display.toggle_fullscreen()
@@ -707,6 +753,14 @@ class Game():
         elif self.mode == 'high':
             if not highscore.step(1):
                 self.setMode('title')
+                if highscore.insert(self.score, highscore.name):
+                    self.tick_last_mode_change -= 280   # show high score list sooner
+
+                    if HIGHSCORE_LIST_ENABLED:
+                        try:
+                            highscore.save()
+                        except:
+                            print('error saving highscores')
 
     def on_left_pressed(self):
         if self.mode == 'game':
@@ -877,23 +931,28 @@ class Game():
 
     def setMode(self, mode):
         self.mode = mode
+        self.tick_last_mode_change = self.tick
         cls()
 
 
     def backToTitle(self):
-        if self.score > self.highscore:
-            self.highscore = self.score
-
-            if HIGHSCORE_NAME_ENTRY_ENABLED:
-                self.setMode('high')
-                highscore.reset()
-            else:
-                self.setMode('title')
-        else:
-            self.setMode('title')
-
         self.player.xpos = 0
         self.player.ypos = 0
+
+        if HIGHSCORE_LIST_ENABLED:
+            if highscore.check(self.score):
+                self.setMode('high')
+                highscore.reset()
+                return
+                
+        elif HIGHSCORE_NAME_ENTRY_ENABLED:
+            if self.score > self.highscore:
+                self.highscore = self.score
+                self.setMode('high')
+                highscore.reset()
+                return
+            
+        self.setMode('title')
 
 
     def newGame(self):
