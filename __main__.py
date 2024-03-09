@@ -42,11 +42,16 @@ if not 'DEFAULT_BRIGHTNESS' in dir():
     else:
         DEFAULT_BRIGHTNESS = 0
 
+if not 'HIGHSCORE_LIST_ENABLED' in dir():
+    # if highscore list is disabled, only the 'simple' mode
+    # with one highscore is supported. player can still enter
+    # his name if HIGHSCORE_NAME_ENTRY_ENABLED is True
+    HIGHSCORE_LIST_ENABLED = True
+
 if not 'HIGHSCORE_NAME_ENTRY_ENABLED' in dir():
+    # only has effect if highscore list is disabled
     HIGHSCORE_NAME_ENTRY_ENABLED = True
 
-if not 'HIGHSCORE_LIST_ENABLED' in dir():
-    HIGHSCORE_LIST_ENABLED = True
 
 
 brightnessValue = DEFAULT_BRIGHTNESS
