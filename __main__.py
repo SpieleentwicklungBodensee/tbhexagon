@@ -509,8 +509,13 @@ class Game():
         else:
             title_color = COLORS['white']
 
-        self.font_huge.centerText(self.output, 'TOOLBOX', y=2, fgcolor=brightness(title_color))
-        self.font_huge.centerText(self.output, 'HEXAGON', y=3, fgcolor=brightness(title_color))
+        if RENDER_MODE in ('arcade', 'square'):
+            y = 1.5
+        else:
+            y = 2
+
+        self.font_huge.centerText(self.output, 'TOOLBOX', y=y, fgcolor=brightness(title_color))
+        self.font_huge.centerText(self.output, 'HEXAGON', fgcolor=brightness(title_color))
 
         if self.tick % 32 < 16:
             if self.joymode is not None:
@@ -518,7 +523,12 @@ class Game():
             else:
                 presstext = 'PRESS SPACE'
 
-            self.font.centerText(self.output, presstext, y=SCR_H//8 * 0.75, fgcolor=brightness(COLORS['white']))
+            y = SCR_H//8 * 0.75
+
+            if RENDER_MODE in ('arcade', 'square'):
+                y += 2
+
+            self.font.centerText(self.output, presstext, y=y, fgcolor=brightness(COLORS['white']))
 
 
     def drawScoreboard(self):
@@ -543,16 +553,19 @@ class Game():
 
         y = SCR_H/self.font.font_h/2-5
 
-        self.font.drawText(self.output, 'TOP SCORES', x=11, y=y)
-        self.font.drawText(self.output, '')
-        self.font.drawText(self.output, '')
+        if RENDER_MODE in ('arcade', 'square'):
+            y += 1
+
+        self.font.centerText(self.output, 'TOP SCORES', y=y)
+        self.font.centerText(self.output, '')
+        self.font.centerText(self.output, '')
 
         for i, entry in enumerate(highscore.highscorelist[:5]):
             score, name = entry
 
             if (self.tick - self.tick_last_mode_change) % 800 - 300 > (i + 1) * 50:
-                self.font.drawText(self.output, '%05i  %s' % (score, name), x=11, fgcolor=brightness(COLORS['white']))
-                self.font.drawText(self.output, '')
+                self.font.centerText(self.output, '%05i  %s' % (score, name), fgcolor=brightness(COLORS['white']))
+                self.font.centerText(self.output, '')
 
 
     def drawPrintlog(self):
