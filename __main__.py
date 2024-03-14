@@ -4,6 +4,7 @@ import time
 import random
 import math
 import colorsys
+import zensur
 
 from bitmapfont import BitmapFont
 from particles import Particles
@@ -51,6 +52,9 @@ if not 'HIGHSCORE_LIST_ENABLED' in dir():
 if not 'HIGHSCORE_NAME_ENTRY_ENABLED' in dir():
     # only has effect if highscore list is disabled
     HIGHSCORE_NAME_ENTRY_ENABLED = True
+
+if not 'DONT_CENSOR_HIGHSCORE_NAMES' in dir():
+    DONT_CENSOR_HIGHSCORE_NAMES = False
 
 
 
@@ -771,6 +775,7 @@ class Game():
         elif self.mode == 'high':
             if not highscore.step(1):
                 self.setMode('title')
+                if not DONT_CENSOR_HIGHSCORE_NAMES: highscore.name = zensur.censor_highscore_name(highscore.name)
                 if highscore.insert(self.score, highscore.name):
                     self.tick_last_mode_change -= 280   # show high score list sooner
 
