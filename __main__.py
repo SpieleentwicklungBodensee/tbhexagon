@@ -486,7 +486,7 @@ class Game():
         if EventTimer.isPending('soundvol-msg'):
             self.font.centerText(self.output, 'SOUND VOLUME: %2i%%' % int(self.soundVolume * 100))
         if EventTimer.isPending('brightness-msg'):
-            self.font.centerText(self.output, 'DARKNESS: %2i' % int(brightnessValue + 24))
+            self.font.centerText(self.output, 'DARKNESS: %2i' % int(brightnessValue))
 
         # compose and zoom
         if RENDER_MODE == 'plain':
