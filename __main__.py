@@ -364,6 +364,9 @@ class Game():
         self.music = None # loaded later
         self.musicCount = 0
 
+        self.musicVolume = 1.0
+        self.soundVolume = 1.0
+
         if HIGHSCORE_LIST_ENABLED:
             print('loading highscores...')
             try:
@@ -429,6 +432,10 @@ class Game():
         print('------------------')
         print('f1  less brightness')
         print('f2  more brightness')
+        print('f3  - music volume')
+        print('f4  + music volume')
+        print('f5  - sound volume')
+        print('f6  + sound volume')
         print('')
         print('f8  clear highscore')
 
@@ -472,6 +479,14 @@ class Game():
 
         self.drawPrintlog()
         #self.drawDebugInfo()
+
+        # draw volume message
+        if EventTimer.isPending('musicvol-msg'):
+            self.font.centerText(self.output, 'MUSIC VOLUME: %2i%%' % int(self.musicVolume * 100))
+        if EventTimer.isPending('soundvol-msg'):
+            self.font.centerText(self.output, 'SOUND VOLUME: %2i%%' % int(self.soundVolume * 100))
+        if EventTimer.isPending('brightness-msg'):
+            self.font.centerText(self.output, 'DARKNESS: %2i' % int(brightnessValue + 24))
 
         # compose and zoom
         if RENDER_MODE == 'plain':
@@ -708,8 +723,23 @@ class Game():
                 global brightnessValue
                 if e.key == pygame.K_F1:
                     brightnessValue -= 1
+                    EventTimer.set('brightness-msg', 60)
                 elif e.key == pygame.K_F2:
                     brightnessValue = min(brightnessValue + 1, 0)
+                    EventTimer.set('brightness-msg', 60)
+
+                elif e.key == pygame.K_F3:
+                    self.musicVolume = max(self.musicVolume -0.1, 0)
+                    EventTimer.set('musicvol-msg', 60)
+                elif e.key == pygame.K_F4:
+                    self.musicVolume = min(self.musicVolume +0.1, 1.0)
+                    EventTimer.set('musicvol-msg', 60)
+                elif e.key == pygame.K_F5:
+                    self.soundVolume = max(self.soundVolume -0.1, 0)
+                    EventTimer.set('soundvol-msg', 60)
+                elif e.key == pygame.K_F6:
+                    self.soundVolume = min(self.soundVolume +0.1, 1.0)
+                    EventTimer.set('soundvol-msg', 60)
 
                 if e.key == pygame.K_LEFT or e.key == pygame.K_a:
                     self.on_left_pressed()
@@ -867,6 +897,13 @@ class Game():
 
 
     def update(self):
+        if self.music:
+            self.music.set_volume(self.musicVolume)
+
+        self.sound_passthrough1.set_volume(self.soundVolume)
+        self.sound_passthrough2.set_volume(self.soundVolume)
+        self.sound_gameover.set_volume(self.soundVolume)
+
         for wall in self.walls:
             wall.update()
 
