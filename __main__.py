@@ -638,19 +638,7 @@ class Game():
                 if mask.overlap(playermask, (self.player_drawx - wall.collisionSprite_xpos,
                                              self.player_drawy - wall.collisionSprite_ypos)) is not None:
                     self.collisionInfo = (wall.collisionSprite, wall.collisionSprite_xpos, wall.collisionSprite_ypos)
-                    self.gameover = True
-
-                    if HIGHSCORE_LIST_ENABLED and highscore.check(self.score):
-                        EventTimer.set('gameover', 100) # shorter wait time on highscore
-                    elif HIGHSCORE_NAME_ENTRY_ENABLED and self.score > self.highscore:
-                        EventTimer.set('gameover', 100) # shorter wait time on highscore
-                    else:
-                        EventTimer.set('gameover', 200)
-
-                    self.music.stop()
-                    self.music = None
-                    self.particles.player_death(self.player)
-                    self.sound_gameover.play()
+                    self.doGameOver()
                     return
 
                 mask = pygame.mask.from_surface(wall.inverseSprite)
@@ -673,10 +661,24 @@ class Game():
                 wall.score = 0
                 if self.score <0:
                     self.score = 0
-                    self.gameover = True
-                    EventTimer.set('gameover', 200)
-                    self.particles.player_death(self.player)
+                    self.doGameOver()
                 return
+
+
+    def doGameOver(self):
+        self.gameover = True
+
+        if HIGHSCORE_LIST_ENABLED and highscore.check(self.score):
+            EventTimer.set('gameover', 100) # shorter wait time on highscore
+        elif HIGHSCORE_NAME_ENTRY_ENABLED and self.score > self.highscore:
+            EventTimer.set('gameover', 100) # shorter wait time on highscore
+        else:
+            EventTimer.set('gameover', 200)
+
+        self.music.stop()
+        self.music = None
+        self.particles.player_death(self.player)
+        self.sound_gameover.play()
 
 
     def controls(self):
@@ -970,14 +972,14 @@ class Game():
                 self.setMode('high')
                 highscore.reset()
                 return
-                
+
         elif HIGHSCORE_NAME_ENTRY_ENABLED:
             if self.score > self.highscore:
                 self.highscore = self.score
                 self.setMode('high')
                 highscore.reset()
                 return
-            
+
         self.setMode('title')
 
 
