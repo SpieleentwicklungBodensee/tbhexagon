@@ -362,6 +362,7 @@ class Game():
         self.sound_passthrough2 = pygame.mixer.Sound('sfx/passthrough2.wav')
         self.sound_gameover = pygame.mixer.Sound('sfx/verrecksound.wav')
         self.music = None # loaded later
+        self.musicCount = 0
 
         if HIGHSCORE_LIST_ENABLED:
             print('loading highscores...')
@@ -996,8 +997,9 @@ class Game():
 
         self.collisionInfo = False
 
+        self.musicCount += 1
         self.music = pygame.mixer.Sound(['sfx/tbhexagon-space-soundtrack-1.wav',
-                                         'sfx/tbhexagon-space-soundtrack-2.wav'][random.randrange(0,2)])
+                                         'sfx/tbhexagon-space-soundtrack-2.wav'][self.musicCount % 2])
         self.music.play(loops=-1, fade_ms=6000)
 
         self.setMode('game')
