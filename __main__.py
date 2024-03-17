@@ -482,11 +482,11 @@ class Game():
 
         # draw volume message
         if EventTimer.isPending('musicvol-msg'):
-            self.font.centerText(self.output, 'MUSIC VOLUME: %2i%%' % int(self.musicVolume * 100))
+            self.font.centerText(self.output, 'MUSIC VOLUME: %2i%%' % round(self.musicVolume * 100))
         if EventTimer.isPending('soundvol-msg'):
-            self.font.centerText(self.output, 'SOUND VOLUME: %2i%%' % int(self.soundVolume * 100))
+            self.font.centerText(self.output, 'SOUND VOLUME: %2i%%' % round(self.soundVolume * 100))
         if EventTimer.isPending('brightness-msg'):
-            self.font.centerText(self.output, 'DARKNESS: %2i' % int(brightnessValue))
+            self.font.centerText(self.output, 'DARKNESS: %2i' % round(-brightnessValue))
 
         # compose and zoom
         if RENDER_MODE == 'plain':
