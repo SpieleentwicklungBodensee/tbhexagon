@@ -3,7 +3,7 @@ from highscore import CHARS
 censored_words = ["AH","BH","HJ","HH","SD","SS","SA","NS","KZ","IS", # verbotene kfz kennzeichen
                   "SRP","KPD", # verbotene parteien
                   "SPD","CDU","CSU","FDP","AFD","BSW","NPD", # parteien
-                  "ASS","FAG","KKK","SEX","TIT"] # other
+                  "ASS","FAG","KKK","NSU","SEX","TIT"] # other
 
 spaces = ["!"," "]
 
