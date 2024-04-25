@@ -581,7 +581,7 @@ class Game():
         self.font.centerText(self.output, '')
         self.font.centerText(self.output, '')
 
-        for i, entry in enumerate(highscore.highscorelist[:5]):
+        for i, entry in enumerate(highscore.gettop(5)):
             score, name = entry
 
             if (self.tick - self.tick_last_mode_change) % 800 - 300 > (i + 1) * 50:

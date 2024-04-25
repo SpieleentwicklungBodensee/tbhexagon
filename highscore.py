@@ -53,7 +53,7 @@ highscorelist = list(DEFAULT_LIST)
 def check(score):
     if score > highscorelist[4][0]:
         return True
-    
+
     return False
 
 def insert(score, name):
@@ -79,3 +79,17 @@ def clear():
     global highscorelist, name
     highscorelist = list(DEFAULT_LIST)
     name = None
+
+def gettop(num=5):
+    result = []
+    names = []
+
+    for score, name in highscorelist:
+        if not name in names:
+            result.append((score, name))
+            names.append(name)
+
+        if len(result) >= num:
+            break
+
+    return result
