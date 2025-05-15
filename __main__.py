@@ -342,6 +342,12 @@ class Game():
             self.window = pygame.display.set_mode((SCR_W, SCR_H), flags=pygame.SCALED|pygame.FULLSCREEN)
             self.output = self.window
 
+        elif RENDER_MODE == 'wide':
+            SCR_W = 456
+            SCR_H = 256
+            self.window = pygame.display.set_mode((SCR_W, SCR_H), flags=pygame.SCALED|pygame.FULLSCREEN)
+            self.output = self.window
+
         self.running = False
 
         print('loading graphics...')
@@ -532,6 +538,8 @@ class Game():
 
         if RENDER_MODE in ('arcade', 'square'):
             y = 1.5
+        elif RENDER_MODE in ('wide'):
+            y = 1
         else:
             y = 2
 
@@ -548,6 +556,8 @@ class Game():
 
             if RENDER_MODE in ('arcade', 'square'):
                 y += 2
+            elif RENDER_MODE in ('wide'):
+                y += 4
 
             self.font.centerText(self.output, presstext, y=y, fgcolor=brightness(COLORS['white']))
 
@@ -576,6 +586,8 @@ class Game():
 
         if RENDER_MODE in ('arcade', 'square'):
             y += 1
+        elif RENDER_MODE in ('wide'):
+            y += 1.5
 
         self.font.centerText(self.output, 'TOP SCORES', y=y)
         self.font.centerText(self.output, '')
