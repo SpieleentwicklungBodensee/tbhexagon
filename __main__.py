@@ -343,7 +343,7 @@ class Game():
             self.output = self.window
 
         elif RENDER_MODE == 'wide':
-            SCR_W = 456
+            SCR_W = 452
             SCR_H = 256
             self.window = pygame.display.set_mode((SCR_W, SCR_H), flags=pygame.SCALED|pygame.FULLSCREEN)
             self.output = self.window
