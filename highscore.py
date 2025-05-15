@@ -51,7 +51,7 @@ DEFAULT_LIST = [[900, 'TBX'],
 highscorelist = list(DEFAULT_LIST)
 
 def check(score):
-    if score > highscorelist[4][0]:
+    if score > gettop()[4][0]:
         return True
 
     return False
@@ -60,7 +60,7 @@ def insert(score, name):
     highscorelist.append([score, name])
     highscorelist.sort(reverse=True)
 
-    if [score, name] in highscorelist[:5]:
+    if [score, name] in gettop():
         return True
 
     return False
