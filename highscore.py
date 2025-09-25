@@ -60,7 +60,7 @@ def insert(score, name):
     highscorelist.append([score, name])
     highscorelist.sort(reverse=True)
 
-    if [score, name] in gettop():
+    if (score, name) in gettop():
         return True
 
     return False
