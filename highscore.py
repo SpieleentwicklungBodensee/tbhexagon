@@ -51,7 +51,7 @@ DEFAULT_LIST = [[900, 'TBX'],
 highscorelist = list(DEFAULT_LIST)
 
 def check(score):
-    if score > gettop()[4][0]:
+    if len(gettop()) < 5 or score > gettop()[4][0]:
         return True
 
     return False
