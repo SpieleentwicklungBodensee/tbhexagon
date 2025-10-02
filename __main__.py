@@ -1,7 +1,7 @@
 import pygame
 import pygame._sdl2.controller
 import time
-import random
+import argparse
 import math
 import colorsys
 import zensur
@@ -55,6 +55,16 @@ if not 'HIGHSCORE_NAME_ENTRY_ENABLED' in dir():
 
 if not 'DONT_CENSOR_HIGHSCORE_NAMES' in dir():
     DONT_CENSOR_HIGHSCORE_NAMES = False
+
+
+# read settings from command line
+
+parser = argparse.ArgumentParser(prog='Toolbox Hexagon')
+parser.add_argument('--rendermode', default=None, help='possible modes: plain, led, wide, square, arcade')
+args = parser.parse_args()
+
+if args.rendermode:
+    RENDER_MODE = args.rendermode
 
 
 
