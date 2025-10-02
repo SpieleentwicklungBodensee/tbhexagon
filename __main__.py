@@ -25,7 +25,8 @@ if not 'RENDER_MODE' in dir():
     # 'sim' = led simulation for uli (deprecated)
     # 'arcade' = for toolbox arcade cabinet
     # 'square' = for square displays
-    RENDER_MODE = 'led'
+    # 'wide' = for 16:9 displays
+    RENDER_MODE = 'plain'
 
 if not 'JOY_DEADZONE' in dir():
     JOY_DEADZONE = 0.2
@@ -38,10 +39,7 @@ if not 'DEFAULT_MODE' in dir():
     DEFAULT_MODE = 'boot'
 
 if not 'DEFAULT_BRIGHTNESS' in dir():
-    if RENDER_MODE == 'led':
-        DEFAULT_BRIGHTNESS = -4
-    else:
-        DEFAULT_BRIGHTNESS = 0
+    DEFAULT_BRIGHTNESS = None
 
 if not 'HIGHSCORE_LIST_ENABLED' in dir():
     # if highscore list is disabled, only the 'simple' mode
@@ -65,6 +63,12 @@ args = parser.parse_args()
 
 if args.rendermode:
     RENDER_MODE = args.rendermode
+
+if DEFAULT_BRIGHTNESS is None:
+    if RENDER_MODE == 'led':
+        DEFAULT_BRIGHTNESS = -4
+    else:
+        DEFAULT_BRIGHTNESS = 0
 
 
 
